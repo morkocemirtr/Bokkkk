@@ -1,0 +1,2451 @@
+"game.StarterGui:SetCore("SendNotification", {
+        Title = "KING HUB",
+        Text  = "Endless Doors [NEW UI!]"
+    })
+wait()
+game.StarterGui:SetCore("SendNotification", {
+        Title = "KING HUB",
+        Text  = "Event notifiers ON!"
+    })
+ 
+wait()
+
+if game.CoreGui:FindFirstChild("KING HUB Ui") then
+    game.CoreGui:FindFirstChild("KING HUB Ui"):Destroy()
+end
+
+local library = {
+	WorkspaceName = "Name",
+	flags = {},
+	signals = {},
+	objects = {},
+	elements = {},
+	globals = {},
+	subs = {},
+	colored = {},
+	configuration = {
+		hideKeybind = Enum.KeyCode.RightControl,
+		smoothDragging = false,
+		easingStyle = Enum.EasingStyle.Quart,
+		easingDirection = Enum.EasingDirection.Out
+	},
+	colors = {
+		main = Color3.fromRGB(80, 245, 245),
+		background = Color3.fromRGB(40, 40, 40),
+		outerBorder = Color3.fromRGB(15, 15, 15),
+		innerBorder = Color3.fromRGB(73, 63, 73),
+		topGradient = Color3.fromRGB(35, 35, 35),
+		bottomGradient = Color3.fromRGB(29, 29, 29),
+		sectionBackground = Color3.fromRGB(35, 34, 34),
+		section = Color3.fromRGB(176, 175, 176),
+		otherElementText = Color3.fromRGB(129, 127, 129),
+		elementText = Color3.fromRGB(147, 145, 147),
+		elementBorder = Color3.fromRGB(20, 20, 20),
+		selectedOption = Color3.fromRGB(55, 55, 55),
+		unselectedOption = Color3.fromRGB(40, 40, 40),
+		hoveredOptionTop = Color3.fromRGB(65, 65, 65),
+		unhoveredOptionTop = Color3.fromRGB(50, 50, 50),
+		hoveredOptionBottom = Color3.fromRGB(45, 45, 45),
+		unhoveredOptionBottom = Color3.fromRGB(35, 35, 35),
+		tabText = Color3.fromRGB(185, 185, 185)
+	},
+	gui_parent = (function()
+		local x, c = pcall(function()
+			return game:GetService("CoreGui")
+		end)
+		if x and c then
+			return c
+		end
+		x, c = pcall(function()
+			return (game:IsLoaded() or (game.Loaded:Wait() or 1)) and game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+		end)
+		if x and c then
+			return c
+		end
+		x, c = pcall(function()
+			return game:GetService("StarterGui")
+		end)
+		if x and c then
+			return c
+		end
+		return error("Seriously bad exploit. Can't find a place to store the GUI. Robust code can't help here.")
+	end)(),
+	colorpicker = false,
+	colorpickerconflicts = {},
+	rainbowflags = {},
+	rainbows = 0,
+	rainbowsg = 0
+}
+library.Subs = library.subs
+local library_flags = library.flags
+local destroyrainbows, destroyrainbowsg = nil
+function darkenColor(clr, intensity)
+	if not intensity or intensity == 1 then
+		return clr
+	end
+	if clr and (typeof(clr) == "Color3" or type(clr) == "table") then
+		return Color3.new(clr.R / intensity, clr.G / intensity, clr.B / intensity)
+	end
+end
+library.subs.darkenColor = darkenColor
+local __runscript = true
+local function wait_check(...)
+	if __runscript then
+		return wait(...)
+	else
+		wait()
+		return false
+	end
+end
+library.subs.Wait, library.subs.wait = wait_check, wait_check
+local lasthidebing = 0
+local temp = game:FindService("MarketplaceService") or game:GetService("MarketplaceService")
+local Marketplace = (temp and (cloneref and cloneref(temp))) or temp
+local resolvevararg, temp = nil
+do
+	local lwr = string.lower
+	function library.defaultSort(a, b)
+		return lwr(tostring(b)) > lwr(tostring(a))
+	end
+end
+do
+	local varargresolve = {
+		Window = {"Name", "Theme"},
+		Tab = {"Name", "Image"},
+		Section = {"Name", "Side"},
+		Label = {"Text", "Flag", "UnloadValue", "UnloadFunc"},
+		Toggle = {"Name", "Value", "Callback", "Flag", "Location", "LocationFlag", "UnloadValue", "UnloadFunc", "Locked", "Keybind", "Condition", "AllowDuplicateCalls"},
+		Textbox = {"Name", "Value", "Callback", "Flag", "Location", "LocationFlag", "UnloadValue", "UnloadFunc", "Placeholder", "Type", "Min", "Max", "Decimals", "Hex", "Binary", "Base", "RichTextBox", "MultiLine", "TextScaled", "TextFont", "PreFormat", "PostFormat", "CustomProperties", "AllowDuplicateCalls"},
+		Slider = {"Name", "Value", "Callback", "Flag", "Location", "LocationFlag", "UnloadValue", "UnloadFunc", "Min", "Max", "Decimals", "Format", "IllegalInput", "Textbox", "AllowDuplicateCalls"},
+		Button = {"Name", "Callback", "Locked", "Condition"},
+		Keybind = {"Name", "Value", "Callback", "Flag", "Location", "LocationFlag", "UnloadValue", "UnloadFunc", "Pressed", "KeyNames", "AllowDuplicateCalls"},
+		Dropdown = {"Name", "Value", "Callback", "Flag", "Location", "LocationFlag", "UnloadValue", "UnloadFunc", "List", "Filter", "Method", "Nothing", "Sort", "MultiSelect", "ItemAdded", "ItemRemoved", "ItemChanged", "ItemsCleared", "ScrollUpButton", "ScrollDownButton", "ScrollButtonRate", "DisablePrecisionScrolling", "AllowDuplicateCalls"},
+		SearchBox = {"Name", "Value", "Callback", "Flag", "Location", "LocationFlag", "UnloadValue", "UnloadFunc", "List", "Filter", "Method", "Nothing", "Sort", "MultiSelect", "ItemAdded", "ItemRemoved", "ItemChanged", "ItemsCleared", "ScrollUpButton", "ScrollDownButton", "ScrollButtonRate", "DisablePrecisionScrolling", "RegEx", "AllowDuplicateCalls"},
+		Colorpicker = {"Name", "Value", "Callback", "Flag", "Location", "LocationFlag", "UnloadValue", "UnloadFunc", "Rainbow", "Random", "AllowDuplicateCalls"},
+		Persistence = {"Name", "Value", "Callback", "Flag", "Location", "LocationFlag", "UnloadValue", "UnloadFunc", "Workspace", "Persistive", "Suffix", "LoadCallback", "SaveCallback", "PostLoadCallback", "PostSaveCallback", "ScrollUpButton", "ScrollDownButton", "ScrollButtonRate", "DisablePrecisionScrolling", "AllowDuplicateCalls"},
+		Designer = {"Backdrop", "Image", "Info", "Credit"}
+	}
+	function resolvevararg(objtype, ...)
+		local data = varargresolve[objtype]
+		local t = {}
+		if data then
+			for index, value in next, {...} do
+				t[data[index]] = value
+			end
+		end
+		return t
+	end
+end
+local resolvercache = {}
+library.resolvercache = resolvercache
+local function resolveid(image, flag)
+	if image then
+		if type(image) == "string" then
+			if (#image > 14 and string.sub(image, 1, 13) == "rbxassetid://") or (#image > 12 and string.sub(image, 1, 11) == "rbxasset://") or (#image > 12 and string.sub(image, 1, 11) ~= "rbxthumb://") then
+				if flag then
+					local thing = library.elements[flag] or library.designerelements[flag]
+					if thing and thing.Set then
+						task.spawn(thing.Set, thing, image)
+					end
+				end
+				return image
+			end
+		end
+		local orig = image
+		if resolvercache[orig] then
+			if flag then
+				local thing = library.elements[flag] or library.designerelements[flag]
+				if thing and thing.Set then
+					task.spawn(thing.Set, thing, resolvercache[orig])
+				end
+			end
+			return resolvercache[orig]
+		end
+		image = tonumber(image) or image
+		local succezz = pcall(function()
+			local typ = type(image)
+			if typ == "string" then
+				if getsynasset then
+					if #image > 11 and string.sub(image, 1, 11) == "synasset://" then
+						return getsynasset(string.sub(image, 12))
+					elseif #image > 14 and string.sub(image, 1, 14) == "synasseturl://" then
+						local x, e = pcall(function()
+							local codename, fixes = string.gsub(image, ".", function(c)
+								if c:lower() == c:upper() and not tonumber(c) then
+									return ""
+								end
+							end)
+							codename = string.sub(codename, 1, 24) .. tostring(fixes)
+							local fold = isfolder("./Function Lib")
+							if not fold then
+								makefolder("./Function Lib")
+							end
+							fold = isfolder("./Function Lib/Themes")
+							if not fold then
+								makefolder("./Function Lib/Themes")
+							end
+							fold = isfolder("./Function Lib/Themes/SynapseAssetsCache")
+							if not fold then
+								makefolder("./Function Lib Themes/SynapseAssetsCache")
+							end
+							if not fold or not isfile("./Function Lib/Themes/SynapseAssetsCache/" .. codename .. ".dat") then
+								local res = game:HttpGet(string.sub(image, 15))
+								if res ~= nil then
+									writefile("./Function Lib/Themes/SynapseAssetsCache/" .. codename .. ".dat", res)
+								end
+							end
+							return getsynasset(readfile("./Function Lib/Themes/SynapseAssetsCache/" .. codename .. ".dat"))
+						end)
+						if x and e ~= nil then
+							return e
+						end
+					end
+				end
+				if #image < 11 or (string.sub(image, 1, 13) ~= "rbxassetid://" and string.sub(image, 1, 11) ~= "rbxasset://" and string.sub(image, 1, 11) ~= "rbxthumb://") then
+					image = tonumber(image:gsub("%D", ""), 10) or image
+					typ = type(image)
+				end
+			end
+			if typ == "number" and image > 0 then
+				pcall(function()
+					local nfo = Marketplace and Marketplace:GetProductInfo(image)
+					image = tostring(image)
+					if nfo and nfo.AssetTypeId == 1 then
+						image = "rbxassetid://" .. image
+					elseif nfo.AssetTypeId == 13 then
+						local decal = game:GetObjects("rbxassetid://" .. image)[1]
+						image = "rbxassetid://" .. decal.Texture:match("%d+$")
+						decal = (decal and decal:Destroy() and nil) or nil
+					end
+				end)
+			else
+				image = nil
+			end
+		end)
+		if succezz and image then
+			if orig then
+				resolvercache[orig] = image
+			end
+			resolvercache[image] = image
+			if flag then
+				local thing = library.elements[flag] or library.designerelements[flag]
+				if thing and thing.Set then
+					task.spawn(thing.Set, thing, image)
+				end
+			end
+		end
+	end
+	return image
+end
+library.subs.ResolveID = resolveid
+library.resolvercache = resolvercache
+local colored = library.colored
+local colors = library.colors
+local tweenService = game:GetService("TweenService")
+local updatecolors = nil
+do
+	function updatecolors(tweenit)
+		if library.objects and (#library.objects > 0 or next(library.objects)) then
+			for _, data in next, colored do
+				local x, e
+				if tweenit then
+					x, e = pcall(function()
+						local cclr = colors[data[3]]
+						local darkness = data[4]
+						tweenService:Create(data[1], TweenInfo.new(tweenit, library.configuration.easingStyle, library.configuration.easingDirection), {
+							[data[2]] = (darkness and darkness ~= 1 and darkenColor(cclr, darkness)) or cclr
+						}):Play()
+					end)
+				end
+				if not x then
+					local x, e = pcall(function()
+						local cclr = colors[data[3]]
+						local darkness = data[4]
+						data[1][data[2]] = (darkness and darkness ~= 1 and darkenColor(cclr, darkness)) or cclr
+					end)
+					if not x and e then
+						warn(debug.traceback(e))
+					end
+				end
+			end
+			pcall(function()
+				if library.Backdrop then
+					library.Backdrop.Visible = not not library_flags["__Designer.Background.UseBackgroundImage"]
+					library.Backdrop.Image = resolveid(library_flags["__Designer.Background.ImageAssetID"], "__Designer.Background.ImageAssetID") or ""
+					library.Backdrop.ImageColor3 = library_flags["__Designer.Background.ImageColor"] or Color3.new(1, 1, 1)
+					library.Backdrop.ImageTransparency = (library_flags["__Designer.Background.ImageTransparency"] or 95) / 100
+				end
+			end)
+		end
+	end
+	library.subs.UpdateColors = updatecolors
+end
+local function updatecolorsnotween()
+	updatecolors()
+end
+library.subs.updatecolors = updatecolors
+library.colors = setmetatable({}, {
+	__index = colors,
+	__newindex = function(_, k, v)
+		if colors[k] ~= v then
+			colors[k] = v
+			spawn(updatecolorsnotween)
+		end
+	end
+})
+local elements = library.elements
+shared.libraries = shared.libraries or {}
+local colorpickerconflicts = library.colorpickerconflicts
+local keyHandler = {
+	notAllowedKeys = {
+		[Enum.KeyCode.Return] = true,
+		[Enum.KeyCode.Space] = true,
+		[Enum.KeyCode.Tab] = true,
+		[Enum.KeyCode.Unknown] = true,
+		[Enum.KeyCode.Backspace] = true
+	},
+	notAllowedMouseInputs = {
+		[Enum.UserInputType.MouseMovement] = true,
+		[Enum.UserInputType.MouseWheel] = true,
+		[Enum.UserInputType.MouseButton1] = true,
+		[Enum.UserInputType.MouseButton2] = true,
+		[Enum.UserInputType.MouseButton3] = true
+	},
+	allowedKeys = {
+		[Enum.KeyCode.LeftShift] = "LShift",
+		[Enum.KeyCode.RightShift] = "RShift",
+		[Enum.KeyCode.LeftControl] = "LCtrl",
+		[Enum.KeyCode.RightControl] = "RCtrl",
+		[Enum.KeyCode.LeftAlt] = "LAlt",
+		[Enum.KeyCode.RightAlt] = "RAlt",
+		[Enum.KeyCode.CapsLock] = "CAPS",
+		[Enum.KeyCode.One] = "1",
+		[Enum.KeyCode.Two] = "2",
+		[Enum.KeyCode.Three] = "3",
+		[Enum.KeyCode.Four] = "4",
+		[Enum.KeyCode.Five] = "5",
+		[Enum.KeyCode.Six] = "6",
+		[Enum.KeyCode.Seven] = "7",
+		[Enum.KeyCode.Eight] = "8",
+		[Enum.KeyCode.Nine] = "9",
+		[Enum.KeyCode.Zero] = "0",
+		[Enum.KeyCode.KeypadOne] = "Num-1",
+		[Enum.KeyCode.KeypadTwo] = "Num-2",
+		[Enum.KeyCode.KeypadThree] = "Num-3",
+		[Enum.KeyCode.KeypadFour] = "Num-4",
+		[Enum.KeyCode.KeypadFive] = "Num-5",
+		[Enum.KeyCode.KeypadSix] = "Num-6",
+		[Enum.KeyCode.KeypadSeven] = "Num-7",
+		[Enum.KeyCode.KeypadEight] = "Num-8",
+		[Enum.KeyCode.KeypadNine] = "Num-9",
+		[Enum.KeyCode.KeypadZero] = "Num-0",
+		[Enum.KeyCode.Minus] = "-",
+		[Enum.KeyCode.Equals] = "=",
+		[Enum.KeyCode.Tilde] = "~",
+		[Enum.KeyCode.LeftBracket] = "[",
+		[Enum.KeyCode.RightBracket] = "]",
+		[Enum.KeyCode.RightParenthesis] = ")",
+		[Enum.KeyCode.LeftParenthesis] = "(",
+		[Enum.KeyCode.Semicolon] = ";",
+		[Enum.KeyCode.Quote] = "'",
+		[Enum.KeyCode.BackSlash] = "\\",
+		[Enum.KeyCode.Comma] = ",",
+		[Enum.KeyCode.Period] = ".",
+		[Enum.KeyCode.Slash] = "/",
+		[Enum.KeyCode.Asterisk] = "*",
+		[Enum.KeyCode.Plus] = "+",
+		[Enum.KeyCode.Period] = ".",
+		[Enum.KeyCode.Backquote] = "`"
+	}
+}
+local function hardunload(library)
+	if library.UnloadCallback and type(library.UnloadCallback) == "function" then
+		local x, e = pcall(library.UnloadCallback)
+		if not x and e then
+			task.spawn(error, e, 2)
+		end
+	end
+	for cflag, data in next, elements do
+		if data.Type ~= "Persistence" then
+			if data.Set and data.Options.UnloadValue ~= nil then
+				data.Set(data.Options.UnloadValue)
+			end
+			if data.Options.UnloadFunc then
+				local y, u = pcall(data.Options.UnloadFunc)
+				if not y and u then
+					warn(debug.traceback("Error unloading '" .. tostring(cflag) .. "'\n" .. u))
+				end
+			end
+		end
+	end
+	for _, v in next, {library.signals, library.objects} do
+		for k, o in next, v do
+			if o then
+				local te = typeof(o)
+				if te == "RBXScriptConnection" then
+					o:Disconnect()
+				elseif te == "Instance" then
+					o:Destroy()
+				end
+			end
+			v[k] = nil
+		end
+	end
+	library.signals = nil
+	library.objects = nil
+end
+library.Subs.UnloadArg = hardunload
+local function unloadall()
+	if shared.libraries then
+		local b = 50
+		while #shared.libraries > 0 do
+			b = b - 1
+			if b < 0 then
+				b = 50
+				wait(warn("Looped 50 times while unloading....?"))
+			end
+			local v = shared.libraries[1]
+			if v and v.unload and type(v.unload) == "function" then
+				if not pcall(v.unload) then
+					pcall(hardunload, v)
+					for k in next, v do
+						v[k] = nil
+					end
+				end
+				table.remove(shared.libraries, 1)
+			end
+		end
+	end
+	shared.libraries = nil
+end
+shared.unloadall = unloadall
+library.unloadall = unloadall
+shared.libraries[1 + #shared.libraries] = library
+function library.unload()
+	__runscript = nil
+	hardunload(library)
+	if shared.libraries then
+		for k, v in next, shared.libraries or {} do
+			if v == library then
+				for k in next, table.remove(shared.libraries, k) do
+					v[k] = nil
+				end
+				break
+			end
+		end
+		if #shared.libraries == 0 then
+			shared.libraries = nil
+		end
+	end
+	warn("Unloaded")
+end
+library.Unload = library.unload
+local Instance_new = (syn and syn.protect_gui and function(...)
+	local x = {Instance.new(...)}
+	if x[1] then
+		library.objects[1 + #library.objects] = x[1]
+		pcall(syn.protect_gui, x[1])
+	end
+	return unpack(x)
+end) or function(...)
+	local x = {Instance.new(...)}
+	if x[1] then
+		library.objects[1 + #library.objects] = x[1]
+	end
+	return unpack(x)
+end
+library.subs.Instance_new = Instance_new
+local playersservice = game:GetService("Players")
+local function getresolver(listt, filter, method, _)
+	local huo, args = type(filter), {}
+	local hou = typeof(listt)
+	return (hou == "table" and function()
+		return listt
+	end) or function()
+		local hardtype = nil
+		local g = listt
+		for _ = 1, 5 do
+			hardtype = typeof(g)
+			if hardtype == "function" then
+				local x, e = pcall(listt)
+				if x and e then
+					g = e
+				end
+				hardtype = typeof(g)
+			end
+			if hardtype == "Instance" then
+				local lastg = g
+				if method == nil and listt == playersservice then
+					g = listt:GetPlayers()
+				end
+				if method then
+					local metype = type(method)
+					if metype == "table" then
+						method = method.Method or method[1]
+						args = method.Args or method.Arguments or unpack(method, (method.Method ~= nil and 1) or 2)
+						metype = type(method)
+					end
+					local y, u = nil, nil
+					if metype == "function" then
+						y, u = pcall(method, listt, unpack(args))
+					elseif metype == "string" then
+						local y, u = pcall(function()
+							return listt[method](listt, unpack(args))
+						end)
+					else
+						warn("Idk how to handle method type of", metype, debug.traceback(""))
+					end
+					if u then
+						if y then
+							g = u
+						else
+							warn("Error trying method", method, "on", listt, debug.traceback(u))
+						end
+					end
+				end
+				if g == lastg then
+					g = listt:GetChildren()
+				end
+			end
+			if hardtype == "Enum" then
+				g = listt:GetEnumItems()
+			end
+			hardtype = typeof(g)
+			if hardtype == "table" then
+				break
+			end
+		end
+		hardtype = typeof(g)
+		if hardtype ~= "table" then
+			warn("Could not resolve " .. hou .. " type to a list.")
+			return {}
+		end
+		if filter then
+			if huo == "function" then
+				local accept = {}
+				for _, v in next, g do
+					local x, e = pcall(filter, v)
+					if x and e then
+						accept[1 + #accept] = (e == true and v) or e
+					end
+				end
+				g = accept
+			elseif huo == "string" then
+				local accept = {}
+				for _, v in next, g do
+					if tostring(v):lower():find(huo) then
+						accept[1 + #accept] = v
+					end
+				end
+				g = accept
+			elseif huo == "table" then
+				local accept = {}
+				if type(filter[1]) == "string" then
+					for _, v in next, g do
+						if tostring(v):lower():find(huo) then
+							accept[1 + #accept] = v
+						elseif filter[0] then
+							accept[1 + #accept] = v
+						end
+					end
+				else
+					for _, v in next, g do
+						if not table.find(filter, v) and not table.find(filter, tostring(v)) then
+							accept[1 + #accept] = v
+						elseif not filter[0] then
+							accept[1 + #accept] = v
+						end
+					end
+				end
+				g = accept
+			end
+		end
+		return g
+	end
+end
+library.subs.GetResolver = getresolver
+local function resetall()
+	destroyrainbowsg = true
+	pcall(function()
+		for k, v in next, elements do
+			if v and k and v.Set and v.Default ~= nil and library_flags[k] ~= v.Default and string.sub(k, 1, 11) ~= "__Designer." then
+				v:Set(v.Default)
+			end
+		end
+	end)
+end
+library.ResetAll = resetall
+local textService = game:GetService("TextService")
+local userInputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+local LP = playersservice.LocalPlayer
+library.LP = LP
+library.Players = playersservice
+library.UserInputService = userInputService
+library.RunService = runService
+local mouse = LP and LP:GetMouse()
+if not mouse and PluginManager and runService:IsStudio() then
+	shared.library_plugin = shared.library_plugin or print("Creating Studio Test-Plugin...") or PluginManager():CreatePlugin()
+	mouse = shared.library_plugin:GetMouse()
+	library.plugin = shared.library_plugin
+end
+library.Mouse = mouse
+local function textToSize(object)
+	if object ~= nil then
+		local output = textService:GetTextSize(object.Text, object.TextSize, object.Font, Vector2.new(math.huge, math.huge))
+		return {
+			X = output.X,
+			Y = output.Y
+		}
+	end
+end
+library.subs.textToSize = textToSize
+local function removeSpaces(str)
+	if str then
+		local newStr = str:gsub(" ", "")
+		return newStr
+	end
+end
+library.subs.removeSpaces = removeSpaces
+local function Color3FromHex(hex)
+	hex = hex:gsub("#", ""):upper():gsub("0X", "")
+	return Color3.fromRGB(tonumber(hex:sub(1, 2), 16), tonumber(hex:sub(3, 4), 16), tonumber(hex:sub(5, 6), 16))
+end
+library.subs.Color3FromHex = Color3FromHex
+local floor = math.floor
+local function Color3ToHex(color)
+	local r, g, b = string.format("%X", floor(color.R * 255)), string.format("%X", floor(color.G * 255)), string.format("%X", floor(color.B * 255))
+	if #r < 2 then
+		r = "0" .. r
+	end
+	if #g < 2 then
+		g = "0" .. g
+	end
+	if #b < 2 then
+		b = "0" .. b
+	end
+	return string.format("%s%s%s", r, g, b)
+end
+if Color3.ToHex and not shared.overridecolortohex then
+	local x, e = pcall(Color3.ToHex, Color3.new())
+	if x and type(e) == "string" and #e == 6 then
+		Color3ToHex = Color3.ToHex
+	end
+end
+library.subs.Color3ToHex = Color3ToHex
+local isDraggingSomething = false
+local function makeDraggable(topBarObject, object)
+	local dragging = nil
+	local dragInput = nil
+	local dragStart = nil
+	local startPosition = nil
+	library.signals[1 + #library.signals] = topBarObject.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPosition = object.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+				end
+			end)
+		end
+	end)
+	library.signals[1 + #library.signals] = topBarObject.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			dragInput = input
+		end
+	end)
+	library.signals[1 + #library.signals] = userInputService.InputChanged:Connect(function(input)
+		if input == dragInput and dragging then
+			local delta = input.Position - dragStart
+			if not isDraggingSomething and library.configuration.smoothDragging then
+				tweenService:Create(object, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+					Position = UDim2.new(startPosition.X.Scale, startPosition.X.Offset + delta.X, startPosition.Y.Scale, startPosition.Y.Offset + delta.Y)
+				}):Play()
+			elseif not isDraggingSomething and not library.configuration.smoothDragging then
+				object.Position = UDim2.new(startPosition.X.Scale, startPosition.X.Offset + delta.X, startPosition.Y.Scale, startPosition.Y.Offset + delta.Y)
+			end
+		end
+	end)
+end
+library.subs.makeDraggable = makeDraggable
+local JSONEncode, JSONDecode = nil, nil
+do
+	local temp_http = game:FindService("HttpService") or game:GetService("HttpService")
+	local httpservice = temp_http
+	if cloneref and type(cloneref) == "function" then
+		httpservice, temp_http = cloneref(httpservice), nil
+	end
+	library.Http = httpservice
+	local JSONEncodeFunc = httpservice.JSONEncode
+	function JSONEncode(...)
+		return pcall(JSONEncodeFunc, httpservice, ...)
+	end
+	library.JSONEncode = JSONEncode
+	local JSONDecodeFunc = httpservice.JSONDecode
+	function JSONDecode(...)
+		return pcall(JSONDecodeFunc, httpservice, ...)
+	end
+	library.JSONDecode = JSONDecode
+end
+local convertfilename
+do
+	local string_gsub = string.gsub
+	function convertfilename(str, default, replace)
+		replace = replace or "_"
+		local corrections = 0
+		local predname = string_gsub(str, "%W", function(c)
+			local byt = c:byte()
+			if not (byt == 0 or byt == 32 or byt == 33 or byt == 59 or byt == 61 or (byt >= 35 and byt <= 41) or (byt >= 43 and byt <= 57) or (byt >= 64 and byt <= 123) or (byt >= 125 and byt <= 127)) then
+				corrections = 1 + corrections
+				return replace
+			end
+		end)
+		return (default and corrections == #predname and tostring(default)) or predname
+	end
+	library.subs.ConvertFilename = convertfilename
+end
+function library:CreateWindow(options, ...)
+	options = (options and type(options) == "string" and resolvevararg("Window", options, ...)) or options
+	local homepage = nil
+	local windowoptions = options
+	local windowName = options.Name or "Unnamed Window"
+	options.Name = windowName
+	if windowName and #windowName > 0 and library.WorkspaceName == "Function Lib" then
+		library.WorkspaceName = convertfilename(windowName, "Function Lib")
+	end
+	local FunctionLibrary = Instance_new("ScreenGui")
+	local main = Instance_new("Frame")
+	local mainBorder = Instance_new("Frame")
+	local tabSlider = Instance_new("Frame")
+	local innerMain = Instance_new("Frame")
+	local innerMainBorder = Instance_new("Frame")
+	local innerBackdrop = Instance_new("ImageLabel")
+	local innerMainHolder = Instance_new("Frame")
+	local tabsHolder = Instance_new("ImageLabel")
+	local tabHolderList = Instance_new("UIListLayout")
+	local tabHolderPadding = Instance_new("UIPadding")
+	local headline = Instance_new("TextLabel")
+	local splitter = Instance_new("TextLabel")
+	local submenuOpen = nil
+	library.globals["__Window" .. options.Name] = {
+		submenuOpen = submenuOpen
+	}
+	FunctionLibrary.Name = "PepsiUi"
+	FunctionLibrary.Parent = library.gui_parent
+	FunctionLibrary.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	FunctionLibrary.DisplayOrder = 10
+	FunctionLibrary.ResetOnSpawn = false
+	main.Name = "main"
+	main.Parent = FunctionLibrary
+	main.AnchorPoint = Vector2.new(0.5, 0.5)
+	main.BackgroundColor3 = library.colors.background
+	colored[1 + #colored] = {main, "BackgroundColor3", "background"}
+	main.BorderColor3 = library.colors.outerBorder
+	colored[1 + #colored] = {main, "BorderColor3", "outerBorder"}
+	main.Position = UDim2.fromScale(0.5, 0.5)
+	main.Size = UDim2.fromOffset(500, 545)
+	makeDraggable(main, main)
+	mainBorder.Name = "mainBorder"
+	mainBorder.Parent = main
+	mainBorder.AnchorPoint = Vector2.new(0.5, 0.5)
+	mainBorder.BackgroundColor3 = library.colors.background
+	colored[1 + #colored] = {mainBorder, "BackgroundColor3", "background"}
+	mainBorder.BorderColor3 = library.colors.innerBorder
+	colored[1 + #colored] = {mainBorder, "BorderColor3", "innerBorder"}
+	mainBorder.BorderMode = Enum.BorderMode.Inset
+	mainBorder.Position = UDim2.fromScale(0.5, 0.5)
+	mainBorder.Size = UDim2.fromScale(1, 1)
+	innerMain.Name = "innerMain"
+	innerMain.Parent = main
+	innerMain.AnchorPoint = Vector2.new(0.5, 0.5)
+	innerMain.BackgroundColor3 = library.colors.background
+	colored[1 + #colored] = {innerMain, "BackgroundColor3", "background"}
+	innerMain.BorderColor3 = library.colors.outerBorder
+	colored[1 + #colored] = {innerMain, "BorderColor3", "outerBorder"}
+	innerMain.Position = UDim2.fromScale(0.5, 0.5)
+	innerMain.Size = UDim2.new(1, -14, 1, -14)
+	innerMainBorder.Name = "innerMainBorder"
+	innerMainBorder.Parent = innerMain
+	innerMainBorder.AnchorPoint = Vector2.new(0.5, 0.5)
+	innerMainBorder.BackgroundColor3 = library.colors.background
+	colored[1 + #colored] = {innerMainBorder, "BackgroundColor3", "background"}
+	innerMainBorder.BorderColor3 = library.colors.innerBorder
+	colored[1 + #colored] = {innerMainBorder, "BorderColor3", "innerBorder"}
+	innerMainBorder.BorderMode = Enum.BorderMode.Inset
+	innerMainBorder.Position = UDim2.fromScale(0.5, 0.5)
+	innerMainBorder.Size = UDim2.fromScale(1, 1)
+	innerMainHolder.Name = "innerMainHolder"
+	innerMainHolder.Parent = innerMain
+	innerMainHolder.BackgroundColor3 = Color3.new(1, 1, 1)
+	innerMainHolder.BackgroundTransparency = 1
+	innerMainHolder.Position = UDim2:fromOffset(25)
+	innerMainHolder.Size = UDim2.new(1, 0, 1, -25)
+	innerBackdrop.Name = "innerBackdrop"
+	innerBackdrop.Parent = innerMainHolder
+	innerBackdrop.BackgroundColor3 = Color3.new(1, 1, 1)
+	innerBackdrop.BackgroundTransparency = 1
+	innerBackdrop.Size = UDim2.fromScale(1, 1)
+	innerBackdrop.ZIndex = -1
+	innerBackdrop.Visible = not not library_flags["__Designer.Background.UseBackgroundImage"]
+	innerBackdrop.ImageColor3 = library_flags["__Designer.Background.ImageColor"] or Color3.new(1, 1, 1)
+	innerBackdrop.ImageTransparency = (library_flags["__Designer.Background.ImageTransparency"] or 95) / 100
+	innerBackdrop.Image = resolveid(library_flags["__Designer.Background.ImageAssetID"], "__Designer.Background.ImageAssetID") or ""
+	library.Backdrop = innerBackdrop
+	tabsHolder.Name = "tabsHolder"
+	tabsHolder.Parent = innerMain
+	tabsHolder.BackgroundColor3 = library.colors.topGradient
+	colored[1 + #colored] = {tabsHolder, "BackgroundColor3", "topGradient"}
+	tabsHolder.BorderSizePixel = 0
+	tabsHolder.Position = UDim2.fromOffset(1, 1)
+	tabsHolder.Size = UDim2.new(1, -2, 0, 23)
+	tabsHolder.Image = "rbxassetid://2454009026"
+	tabsHolder.ImageColor3 = library.colors.bottomGradient
+	colored[1 + #colored] = {tabsHolder, "ImageColor3", "bottomGradient"}
+	tabHolderList.Name = "tabHolderList"
+	tabHolderList.Parent = tabsHolder
+	tabHolderList.FillDirection = Enum.FillDirection.Horizontal
+	tabHolderList.SortOrder = Enum.SortOrder.LayoutOrder
+	tabHolderList.VerticalAlignment = Enum.VerticalAlignment.Center
+	tabHolderList.Padding = UDim:new(3)
+	tabHolderPadding.Name = "tabHolderPadding"
+	tabHolderPadding.Parent = tabsHolder
+	tabHolderPadding.PaddingLeft = UDim:new(7)
+	headline.Name = "headline"
+	headline.Parent = tabsHolder
+	headline.BackgroundColor3 = Color3.new(1, 1, 1)
+	headline.BackgroundTransparency = 1
+	headline.LayoutOrder = 1
+	headline.Font = Enum.Font.Code
+	headline.Text = (windowName and tostring(windowName)) or "???"
+	headline.TextColor3 = library.colors.main
+	colored[1 + #colored] = {headline, "TextColor3", "main"}
+	headline.TextSize = 14
+	headline.TextStrokeColor3 = library.colors.outerBorder
+	colored[1 + #colored] = {headline, "TextStrokeColor3", "outerBorder"}
+	headline.TextStrokeTransparency = 0.75
+	headline.Size = UDim2:new(textToSize(headline).X + 4, 1)
+	splitter.Name = "splitter"
+	splitter.Parent = tabsHolder
+	splitter.BackgroundColor3 = Color3.new(1, 1, 1)
+	splitter.BackgroundTransparency = 1
+	splitter.LayoutOrder = 2
+	splitter.Size = UDim2:new(6, 1)
+	splitter.Font = Enum.Font.Code
+	splitter.Text = "|"
+	splitter.TextColor3 = library.colors.tabText
+	colored[1 + #colored] = {splitter, "TextColor3", "tabText"}
+	splitter.TextSize = 14
+	splitter.TextStrokeColor3 = library.colors.tabText
+	colored[1 + #colored] = {splitter, "TextStrokeColor3", "tabText"}
+	splitter.TextStrokeTransparency = 0.75
+	tabSlider.Name = "tabSlider"
+	tabSlider.Parent = main
+	tabSlider.BackgroundColor3 = library.colors.main
+	colored[1 + #colored] = {tabSlider, "BackgroundColor3", "main"}
+	tabSlider.BorderSizePixel = 0
+	tabSlider.Position = UDim2.fromOffset(100, 30)
+	tabSlider.Size = UDim2:fromOffset(1)
+	tabSlider.Visible = false
+	do
+		local os_clock = os.clock
+		library.signals[1 + #library.signals] = userInputService.InputBegan:Connect(function(keyCode, gameProcessedEvent)
+			gameProcessedEvent = gameProcessedEvent or userInputService:GetFocusedTextBox()
+			if not gameProcessedEvent and keyCode.KeyCode == library.configuration.hideKeybind then
+				if not lasthidebing or os_clock() - lasthidebing > 12 then
+					main.Visible = not main.Visible
+				end
+				lasthidebing = nil
+			end
+		end)
+	end
+	local windowFunctions = {
+		tabCount = 0,
+		selected = {},
+		Flags = elements
+	}
+	library.globals["__Window" .. windowName].windowFunctions = windowFunctions
+	function windowFunctions:Show(x)
+		main.Visible = x == nil or x == true or x == 1
+	end
+	function windowFunctions:Hide(x)
+		main.Visible = x == false or x == 0
+	end
+	function windowFunctions:Visibility(x)
+		if x == nil then
+			main.Visible = not main.Visible
+		else
+			main.Visible = not not x
+		end
+	end
+	function windowFunctions:MoveTabSlider(tabObject)
+		spawn(function()
+			tabSlider.Visible = true
+			tweenService:Create(tabSlider, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+				Size = UDim2.fromOffset(tabObject.AbsoluteSize.X, 1),
+				Position = UDim2.fromOffset(tabObject.AbsolutePosition.X, tabObject.AbsolutePosition.Y + tabObject.AbsoluteSize.Y) - UDim2.fromOffset(main.AbsolutePosition.X, main.AbsolutePosition.Y)
+			}):Play()
+		end)
+	end
+	windowFunctions.LastTab = nil
+	function windowFunctions:CreateTab(options, ...)
+		options = (options and type(options) == "string" and resolvevararg("Tab", options, ...)) or options or {
+			Name = "Function Style: Elite Hax"
+		}
+		local image = options.Image
+		if image then
+			image = resolveid(image)
+		end
+		local tabName = options.Name or "Unnamed Tab"
+		options.Name = tabName
+		windowFunctions.tabCount = windowFunctions.tabCount + 1
+		local newTab = Instance_new((image and "ImageButton") or "TextButton")
+		local newTabHolder = Instance_new("Frame")
+		library.globals["__Window" .. windowName].newTabHolder = newTabHolder
+		local left = Instance_new("ScrollingFrame")
+		local leftList = Instance_new("UIListLayout")
+		local leftPadding = Instance_new("UIPadding")
+		local right = Instance_new("ScrollingFrame")
+		local rightList = Instance_new("UIListLayout")
+		local rightPadding = Instance_new("UIPadding")
+		newTab.Name = removeSpaces((tabName and tostring(tabName):lower() or "???") .. "Tab")
+		newTab.Parent = tabsHolder
+		newTab.BackgroundTransparency = 1
+		newTab.LayoutOrder = (options.LastTab and 99999) or tonumber(options.TabOrder or options.LayoutOrder) or (2 + windowFunctions.tabCount)
+		local colored_newTab_TextColor3 = nil
+		if image then
+			newTab.Image = image
+			newTab.ImageColor3 = options.ImageColor or options.Color or Color3.new(1, 1, 1)
+			newTab.Size = UDim2:new(tabsHolder.AbsoluteSize.Y, 1)
+		else
+			colored_newTab_TextColor3 = {newTab, "TextColor3", "tabText"}
+			colored[1 + #colored] = colored_newTab_TextColor3
+			newTab.Font = Enum.Font.Code
+			newTab.Text = (tabName and tostring(tabName)) or "???"
+			if windowFunctions.tabCount ~= 1 then
+				colored_newTab_TextColor3[4] = 1.35
+				newTab.TextColor3 = darkenColor(library.colors.tabText, 1.35)
+			else
+				newTab.TextColor3 = library.colors.tabText
+			end
+			newTab.TextSize = 14
+			newTab.TextStrokeColor3 = Color3.fromRGB(42, 42, 42)
+			newTab.TextStrokeTransparency = 0.75
+			newTab.Size = UDim2:new(textToSize(newTab).X + 4, 1)
+		end
+		local function goto()
+			if not library.colorpicker and not submenuOpen and windowFunctions.selected.button ~= newTab then
+				pcall(function()
+					for _, e in next, library.elements do
+						if e and type(e) == "table" and e.Update then
+							pcall(e.Update)
+						end
+					end
+				end)
+				if windowFunctions.LastTab then
+					windowFunctions.LastTab[4] = 1.35
+				end
+				windowFunctions:MoveTabSlider(newTab)
+				if windowFunctions.selected.button.ClassName == "TextButton" then
+					tweenService:Create(windowFunctions.selected.button, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+						TextColor3 = darkenColor(library.colors.tabText, 1.35)
+					}):Play()
+				end
+				if colored_newTab_TextColor3 then
+					colored_newTab_TextColor3[4] = nil
+				end
+				windowFunctions.selected.holder.Visible = false
+				windowFunctions.selected.button = newTab
+				windowFunctions.selected.holder = newTabHolder
+				if windowFunctions.selected.button.ClassName == "TextButton" then
+					tweenService:Create(windowFunctions.selected.button, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+						TextColor3 = library.colors.tabText
+					}):Play()
+				end
+				windowFunctions.selected.holder.Visible = true
+				windowFunctions.LastTab = colored_newTab_TextColor3
+			end
+		end
+		if not homepage and newTab.LayoutOrder <= 4 then
+			homepage = goto
+		end
+		library.signals[1 + #library.signals] = newTab.MouseButton1Click:Connect(goto)
+		if windowFunctions.tabCount == 1 then
+			tabSlider.Size = UDim2.fromOffset(newTab.AbsoluteSize.X, 1)
+			tabSlider.Position = UDim2.fromOffset(newTab.AbsolutePosition.X, newTab.AbsolutePosition.Y + newTab.AbsoluteSize.Y) - UDim2.fromOffset(main.AbsolutePosition.X, main.AbsolutePosition.Y)
+			tabSlider.Visible = true
+			windowFunctions.selected.holder = newTabHolder
+			windowFunctions.selected.button = newTab
+		end
+		newTabHolder.Name = removeSpaces((tabName and tabName:lower()) or "???") .. "TabHolder"
+		newTabHolder.Parent = innerMainHolder
+		newTabHolder.BackgroundColor3 = Color3.new(1, 1, 1)
+		newTabHolder.BackgroundTransparency = 1
+		newTabHolder.Size = UDim2.fromScale(1, 1)
+		newTabHolder.Visible = windowFunctions.tabCount == 1
+		left.Name = "left"
+		left.Parent = newTabHolder
+		left.BackgroundColor3 = Color3.new(1, 1, 1)
+		left.BackgroundTransparency = 1
+		left.Size = UDim2.fromScale(0.5, 1)
+		left.CanvasSize = UDim2.new()
+		left.ScrollBarThickness = 0
+		leftList.Name = "leftList"
+		leftList.Parent = left
+		leftList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		leftList.SortOrder = Enum.SortOrder.LayoutOrder
+		leftList.Padding = UDim:new(14)
+		leftPadding.Name = "leftPadding"
+		leftPadding.Parent = left
+		leftPadding.PaddingTop = UDim:new(12)
+		right.Name = "right"
+		right.Parent = newTabHolder
+		right.BackgroundColor3 = Color3.new(1, 1, 1)
+		right.BackgroundTransparency = 1
+		right.Size = UDim2.fromScale(0.5, 1)
+		right.CanvasSize = UDim2.new()
+		right.ScrollBarThickness = 0
+		right.Position = UDim2.new(0.5)
+		rightList.Name = "rightList"
+		rightList.Parent = right
+		rightList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		rightList.SortOrder = Enum.SortOrder.LayoutOrder
+		rightList.Padding = UDim:new(14)
+		rightPadding.Name = "rightPadding"
+		rightPadding.Parent = right
+		rightPadding.PaddingTop = UDim:new(12)
+		local tabFunctions = {
+			Flags = {}
+		}
+		function tabFunctions:CreateSection(options, ...)
+			options = (options and type(options) == "string" and resolvevararg("Tab", options, ...)) or options
+			local sectionName, holderSide = options.Name or "Unnamed Section", options.Side
+			options.Name = sectionName
+			local newSection = Instance_new("Frame")
+			local newSectionBorder = Instance_new("Frame")
+			local insideBorderHider = Instance_new("Frame")
+			local outsideBorderHider = Instance_new("Frame")
+			local sectionHolder = Instance_new("Frame")
+			local sectionList = Instance_new("UIListLayout")
+			local sectionPadding = Instance_new("UIPadding")
+			local sectionHeadline = Instance_new("TextLabel")
+			colorpickerconflicts[1 + #colorpickerconflicts] = insideBorderHider
+			colorpickerconflicts[1 + #colorpickerconflicts] = outsideBorderHider
+			colorpickerconflicts[1 + #colorpickerconflicts] = sectionHeadline
+			newSection.Name = removeSpaces((sectionName and sectionName:lower() or "???") .. "Section")
+			newSection.Parent = (holderSide and ((holderSide:lower() == "left" and left) or right)) or left
+			newSection.BackgroundColor3 = library.colors.sectionBackground
+			colored[1 + #colored] = {newSection, "BackgroundColor3", "sectionBackground"}
+			newSection.BorderColor3 = library.colors.outerBorder
+			colored[1 + #colored] = {newSection, "BorderColor3", "outerBorder"}
+			newSection.Size = UDim2.new(1, -20)
+			newSection.Visible = false
+			newSectionBorder.Name = "newSectionBorder"
+			newSectionBorder.Parent = newSection
+			newSectionBorder.BackgroundColor3 = library.colors.sectionBackground
+			colored[1 + #colored] = {newSectionBorder, "BackgroundColor3", "sectionBackground"}
+			newSectionBorder.BorderColor3 = library.colors.innerBorder
+			colored[1 + #colored] = {newSectionBorder, "BorderColor3", "innerBorder"}
+			newSectionBorder.BorderMode = Enum.BorderMode.Inset
+			newSectionBorder.Size = UDim2.fromScale(1, 1)
+			sectionHolder.Name = "sectionHolder"
+			sectionHolder.Parent = newSection
+			sectionHolder.BackgroundColor3 = Color3.new(1, 1, 1)
+			sectionHolder.BackgroundTransparency = 1
+			sectionHolder.Size = UDim2.fromScale(1, 1)
+			sectionList.Name = "sectionList"
+			sectionList.Parent = sectionHolder
+			sectionList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+			sectionList.SortOrder = Enum.SortOrder.LayoutOrder
+			sectionList.Padding = UDim:new(1)
+			sectionPadding.Name = "sectionPadding"
+			sectionPadding.Parent = sectionHolder
+			sectionPadding.PaddingTop = UDim:new(9)
+			sectionHeadline.Name = "sectionHeadline"
+			sectionHeadline.Parent = newSection
+			sectionHeadline.BackgroundColor3 = Color3.new(1, 1, 1)
+			sectionHeadline.BackgroundTransparency = 1
+			sectionHeadline.Position = UDim2.fromOffset(18, -8)
+			sectionHeadline.ZIndex = 2
+			sectionHeadline.Font = Enum.Font.Code
+			sectionHeadline.LineHeight = 1.15
+			sectionHeadline.Text = (sectionName and sectionName or "???")
+			sectionHeadline.TextColor3 = library.colors.section
+			colored[1 + #colored] = {sectionHeadline, "TextColor3", "section"}
+			sectionHeadline.TextSize = 14
+			sectionHeadline.Size = UDim2.fromOffset(textToSize(sectionHeadline).X + 4, 12)
+			insideBorderHider.Name = "insideBorderHider"
+			insideBorderHider.Parent = newSection
+			insideBorderHider.BackgroundColor3 = library.colors.sectionBackground
+			colored[1 + #colored] = {insideBorderHider, "BackgroundColor3", "sectionBackground"}
+			insideBorderHider.BorderSizePixel = 0
+			insideBorderHider.Position = UDim2.fromOffset(15)
+			insideBorderHider.Size = UDim2.fromOffset(sectionHeadline.AbsoluteSize.X + 3, 1)
+			outsideBorderHider.Name = "outsideBorderHider"
+			outsideBorderHider.Parent = newSection
+			outsideBorderHider.BackgroundColor3 = library.colors.background
+			colored[1 + #colored] = {outsideBorderHider, "BackgroundColor3", "background"}
+			outsideBorderHider.BorderSizePixel = 0
+			outsideBorderHider.Position = UDim2.fromOffset(15, -1)
+			outsideBorderHider.Size = UDim2.fromOffset(sectionHeadline.AbsoluteSize.X + 3, 1)
+			local sectionFunctions = {
+				Flags = {}
+			}
+			function sectionFunctions:Update(extra)
+				local currentHolder = newSection.Parent
+				if not newSection.Visible then
+					newSection.Visible = true
+				end
+				newSection.Size = UDim2.new(1, -20, 0, (sectionList.AbsoluteContentSize.Y + 15))
+				currentHolder.CanvasSize = UDim2:fromOffset(currentHolder:FindFirstChildOfClass("UIListLayout").AbsoluteContentSize.Y + 22 + (extra and extra or 0))
+			end
+			function sectionFunctions:AddToggle(options, ...)
+				options = (options and type(options) == "string" and resolvevararg("Tab", options, ...)) or options
+				local toggleName, alreadyEnabled, callback, flagName = assert(options.Name, "Missing Name for new toggle."), options.Value or options.Enabled, options.Callback, options.Flag or (function()
+					library.unnamedtoggles = 1 + (library.unnamedtoggles or 0)
+					return "Toggle" .. tostring(library.unnamedtoggles)
+				end)()
+				if elements[flagName] ~= nil then
+					warn(debug.traceback("Warning! Re-used flag '" .. flagName .. "'", 3))
+				end
+				local newToggle = Instance_new("Frame")
+				local toggle = Instance_new("ImageLabel")
+				local toggleInner = Instance_new("ImageLabel")
+				local toggleButton = Instance_new("TextButton")
+				local toggleHeadline = Instance_new("TextLabel")
+				local keybindPositioner = Instance_new("Frame")
+				local keybindList = Instance_new("UIListLayout")
+				local keybindButton = Instance_new("TextButton")
+				local lockedup = options.Locked
+				newToggle.Name = removeSpaces((toggleName and toggleName:lower() or "???") .. "Toggle")
+				newToggle.Parent = sectionHolder
+				newToggle.BackgroundColor3 = Color3.new(1, 1, 1)
+				newToggle.BackgroundTransparency = 1
+				newToggle.Size = UDim2.new(1, 0, 0, 19)
+				toggle.Name = "toggle"
+				toggle.Parent = newToggle
+				toggle.Active = true
+				toggle.BackgroundColor3 = library.colors.topGradient
+				local colored_toggle_BackgroundColor3 = {toggle, "BackgroundColor3", "topGradient"}
+				colored[1 + #colored] = colored_toggle_BackgroundColor3
+				toggle.BorderColor3 = library.colors.elementBorder
+				colored[1 + #colored] = {toggle, "BorderColor3", "elementBorder"}
+				toggle.Position = UDim2.fromScale(0.0308237672, 0.165842205)
+				toggle.Selectable = true
+				toggle.Size = UDim2.fromOffset(12, 12)
+				toggle.Image = "rbxassetid://2454009026"
+				toggle.ImageColor3 = library.colors.bottomGradient
+				local colored_toggle_ImageColor3 = {toggle, "ImageColor3", "bottomGradient"}
+				colored[1 + #colored] = colored_toggle_ImageColor3
+				toggleInner.Name = "toggleInner"
+				toggleInner.Parent = toggle
+				toggleInner.Active = true
+				toggleInner.AnchorPoint = Vector2.new(0.5, 0.5)
+				toggleInner.BackgroundColor3 = library.colors.topGradient
+				local colored_toggleInner_BackgroundColor3 = {toggleInner, "BackgroundColor3", "topGradient"}
+				colored[1 + #colored] = colored_toggleInner_BackgroundColor3
+				toggleInner.BorderColor3 = library.colors.elementBorder
+				colored[1 + #colored] = {toggleInner, "BorderColor3", "elementBorder"}
+				toggleInner.Position = UDim2.fromScale(0.5, 0.5)
+				toggleInner.Selectable = true
+				toggleInner.Size = UDim2.new(1, -4, 1, -4)
+				toggleInner.Image = "rbxassetid://2454009026"
+				toggleInner.ImageColor3 = library.colors.bottomGradient
+				local colored_toggleInner_ImageColor3 = {toggleInner, "ImageColor3", "bottomGradient"}
+				colored[1 + #colored] = colored_toggleInner_ImageColor3
+				toggleButton.Name = "toggleButton"
+				toggleButton.Parent = newToggle
+				toggleButton.BackgroundColor3 = Color3.new(1, 1, 1)
+				toggleButton.BackgroundTransparency = 1
+				toggleButton.Size = UDim2.fromScale(1, 1)
+				toggleButton.ZIndex = 5
+				toggleButton.Font = Enum.Font.SourceSans
+				toggleButton.Text = ""
+				toggleButton.TextColor3 = Color3.new()
+				toggleButton.TextSize = 14
+				toggleButton.TextTransparency = 1
+				toggleHeadline.Name = "toggleHeadline"
+				toggleHeadline.Parent = newToggle
+				toggleHeadline.BackgroundColor3 = Color3.new(1, 1, 1)
+				toggleHeadline.BackgroundTransparency = 1
+				toggleHeadline.Position = UDim2.fromScale(0.123, 0.165842161)
+				toggleHeadline.Size = UDim2.fromOffset(170, 11)
+				toggleHeadline.Font = Enum.Font.Code
+				toggleHeadline.Text = toggleName or "???"
+				toggleHeadline.TextColor3 = library.colors.elementText
+				local colored_toggleHeadline_TextColor3 = {toggleHeadline, "TextColor3", "elementText", (lockedup and 0.5) or nil}
+				colored[1 + #colored] = colored_toggleHeadline_TextColor3
+				toggleHeadline.TextSize = 14
+				toggleHeadline.TextXAlignment = Enum.TextXAlignment.Left
+				local last_v = nil
+				local function Set(t, newStatus)
+					if nil == newStatus and t ~= nil then
+						newStatus = t
+					end
+					last_v = library_flags[flagName]
+					if options.Condition ~= nil then
+						if type(options.Condition) == "function" then
+							local v, e = pcall(options.Condition, newStatus, last_v)
+							if e then
+								if not v then
+									warn(debug.traceback(string.format("Error in toggle %s's Condition function: %s", flagName, e), 2))
+								end
+							else
+								return last_v
+							end
+						end
+					end
+					if newStatus ~= nil and type(newStatus) == "boolean" then
+						library_flags[flagName] = newStatus
+						if options.Location then
+							options.Location[options.LocationFlag or flagName] = newStatus
+						end
+						if callback and (last_v ~= newStatus or options.AllowDuplicateCalls) then
+							colored_toggleInner_BackgroundColor3[3] = (newStatus and "main") or "topGradient"
+							colored_toggleInner_BackgroundColor3[4] = (newStatus and 1.5) or nil
+							colored_toggleInner_ImageColor3[3] = (newStatus and "main") or "bottomGradient"
+							colored_toggleInner_ImageColor3[4] = (newStatus and 2.5) or nil
+							tweenService:Create(toggleInner, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+								BackgroundColor3 = (newStatus and darkenColor(library.colors.main, 1.5)) or library.colors.topGradient,
+								ImageColor3 = (newStatus and darkenColor(library.colors.main, 2.5)) or library.colors.bottomGradient
+							}):Play()
+							task.spawn(callback, newStatus, last_v)
+						end
+					end
+					return newStatus
+				end
+				options.Keybind = options.Keybind or options.Key or options.KeyBind
+				local haskbflag, kbUpdate, kbData = nil, nil, nil
+				if options.Keybind then
+					local options = options.Keybind
+					local htyp = typeof(options)
+					if htyp == "EnumItem" then
+						options = {
+							Value = options
+						}
+					elseif htyp ~= "table" then
+						options = {}
+					end
+					local presetKeybind, callback, kbpresscallback, kbflag = options.Value or options.Key, options.Callback, options.Pressed, options.Flag or (function()
+						if flagName then
+							return flagName .. "_ToggleKeybind"
+						end
+						library.unnamedkeybinds = 1 + (library.unnamedkeybinds or 0)
+						return "Keybind" .. tostring(library.unnamedkeybinds)
+					end)()
+					if elements[kbflag] ~= nil or kbflag == flagName then
+						warn(debug.traceback("Warning! Re-used flag '" .. kbflag .. "'", 3))
+					end
+					haskbflag = kbflag
+					library.keyHandler = keyHandler
+					local keyHandler = options.KeyNames or keyHandler
+					local bindedKey = presetKeybind
+					local justBinded = false
+					local keyName = keyHandler.allowedKeys[bindedKey] or (bindedKey and (bindedKey.Name or tostring(bindedKey):gsub("Enum.KeyCode.", ""))) or "NONE"
+					local newKeybind = newToggle
+					keybindPositioner.Name = "keybindPositioner"
+					keybindPositioner.Parent = newKeybind
+					keybindPositioner.BackgroundColor3 = Color3.new(1, 1, 1)
+					keybindPositioner.BackgroundTransparency = 1
+					keybindPositioner.Position = UDim2.new(0.00448430516)
+					keybindPositioner.Size = UDim2.fromOffset(214, 19)
+					keybindPositioner.ZIndex = 1 + toggleButton.ZIndex
+					keybindList.Name = "keybindList"
+					keybindList.Parent = keybindPositioner
+					keybindList.FillDirection = Enum.FillDirection.Horizontal
+					keybindList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+					keybindList.SortOrder = Enum.SortOrder.LayoutOrder
+					keybindList.VerticalAlignment = Enum.VerticalAlignment.Center
+					keybindButton.Name = "keybindButton"
+					keybindButton.Parent = keybindPositioner
+					keybindButton.Active = false
+					keybindButton.BackgroundColor3 = Color3.new(1, 1, 1)
+					keybindButton.BackgroundTransparency = 1
+					keybindButton.Position = UDim2.fromScale(0.598130822, 0.184210524)
+					keybindButton.Selectable = false
+					keybindButton.Size = UDim2.fromOffset(46, 12)
+					keybindButton.Font = Enum.Font.Code
+					keybindButton.Text = keyName or (presetKeybind and tostring(presetKeybind):gsub("Enum.KeyCode.", "")) or "[NONE]"
+					keybindButton.TextColor3 = library.colors.otherElementText
+					local colored_keybindButton_TextColor3 = {keybindButton, "TextColor3", "otherElementText"}
+					colored[1 + #colored] = colored_keybindButton_TextColor3
+					keybindButton.TextSize = 14
+					keybindButton.TextXAlignment = Enum.TextXAlignment.Right
+					keybindButton.Size = UDim2.fromOffset(textToSize(keybindButton).X + 4, 12)
+					local klast_v = bindedKey or presetKeybind
+					local function newkey()
+						if lockedup then
+							return
+						end
+						local old_texts = keybindButton.Text
+						colored_keybindButton_TextColor3[3] = "main"
+						colored_keybindButton_TextColor3[4] = nil
+						tweenService:Create(keybindButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+							TextColor3 = library.colors.main
+						}):Play()
+						if klast_v then
+							keybindButton.Text = "(Was " .. (klast_v and tostring(klast_v):gsub("Enum.KeyCode.", "") or "[NONE]") .. ") [...]"
+						else
+							keybindButton.Text = "[...]"
+						end
+						local receivingKey = nil
+						receivingKey = userInputService.InputBegan:Connect(function(key)
+							if lockedup then
+								return receivingKey:Disconnect()
+							end
+							klast_v = library_flags[kbflag]
+							if not keyHandler.notAllowedKeys[key.KeyCode] then
+								if key.KeyCode ~= Enum.KeyCode.Unknown then
+									bindedKey = (key.KeyCode ~= Enum.KeyCode.Escape and key.KeyCode) or library_flags[kbflag]
+									library_flags[kbflag] = bindedKey
+									if options.Location then
+										options.Location[options.LocationFlag or kbflag] = bindedKey
+									end
+									if bindedKey then
+										keyName = keyHandler.allowedKeys[bindedKey] or (bindedKey and (bindedKey.Name or tostring(bindedKey):gsub("Enum.KeyCode.", ""))) or "NONE"
+										keybindButton.Text = "[" .. (keyName or (bindedKey and bindedKey.Name) or "NONE") .. "]"
+										keybindButton.Size = UDim2.fromOffset(textToSize(keybindButton).X + 4, 12)
+										justBinded = true
+										colored_keybindButton_TextColor3[3] = "otherElementText"
+										colored_keybindButton_TextColor3[4] = nil
+										tweenService:Create(keybindButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+											TextColor3 = library.colors.otherElementText
+										}):Play()
+										receivingKey:Disconnect()
+									end
+									if callback and klast_v ~= bindedKey then
+										task.spawn(callback, bindedKey, klast_v)
+									end
+									return
+								elseif key.KeyCode == Enum.KeyCode.Unknown and not keyHandler.notAllowedMouseInputs[key.UserInputType] then
+									bindedKey = key.UserInputType
+									library_flags[kbflag] = bindedKey
+									if options.Location then
+										options.Location[options.LocationFlag or kbflag] = bindedKey
+									end
+									keyName = keyHandler.allowedKeys[bindedKey]
+									keybindButton.Text = "[" .. (keyName or (bindedKey and bindedKey.Name) or tostring(bindedKey.KeyCode):gsub("Enum.KeyCode.", "")) .. "]"
+									keybindButton.Size = UDim2.fromOffset(textToSize(keybindButton).X + 4, 12)
+									justBinded = true
+									colored_keybindButton_TextColor3[3] = "otherElementText"
+									colored_keybindButton_TextColor3[4] = nil
+									tweenService:Create(keybindButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+										TextColor3 = library.colors.otherElementText
+									}):Play()
+									receivingKey:Disconnect()
+									if callback and klast_v ~= bindedKey then
+										task.spawn(callback, bindedKey, klast_v)
+									end
+									return
+								end
+							end
+							if key.KeyCode == Enum.KeyCode.Backspace or Enum.KeyCode.Escape == key.KeyCode then
+								old_texts, bindedKey = "[NONE]", nil
+							end
+							keybindButton.Text = old_texts
+							colored_keybindButton_TextColor3[3] = "otherElementText"
+							colored_keybindButton_TextColor3[4] = nil
+							tweenService:Create(keybindButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+								TextColor3 = library.colors.otherElementText
+							}):Play()
+							receivingKey:Disconnect()
+							if callback and klast_v ~= bindedKey then
+								task.spawn(callback, bindedKey, klast_v)
+							end
+						end)
+						library.signals[1 + #library.signals] = receivingKey
+					end
+					library.signals[1 + #library.signals] = keybindButton.MouseButton1Click:Connect(newkey)
+					if kbpresscallback and not justBinded then
+						library.signals[1 + #library.signals] = userInputService.InputBegan:Connect(function(key, chatting)
+							chatting = chatting or not not userInputService:GetFocusedTextBox()
+							if not chatting and not justBinded then
+								if not keyHandler.notAllowedKeys[key.KeyCode] and not keyHandler.notAllowedMouseInputs[key.UserInputType] then
+									if bindedKey == key.UserInputType or not justBinded and bindedKey == key.KeyCode then
+										if kbpresscallback then
+											task.spawn(kbpresscallback, key, chatting)
+										end
+									end
+									justBinded = false
+								end
+							end
+						end)
+					end
+					options.Mode = (options.Mode and string.lower(tostring(options.Mode))) or "dynamic"
+					local modes = {
+						dynamic = 1,
+						hold = 1,
+						toggle = 1
+					}
+					library.signals[1 + #library.signals] = userInputService.InputBegan:Connect(function(input, chatting)
+						if justBinded then
+							wait(0.1)
+							justBinded = false
+							return
+						elseif lockedup then
+							return
+						end
+						chatting = chatting or userInputService:GetFocusedTextBox()
+						if not chatting then
+							local key = library_flags[kbflag]
+							local mode = options.Mode
+							if not modes[mode] then
+								mode = "dynamic"
+								options.Mode = mode
+							end
+							if key == input.KeyCode or key == input.UserInputType then
+								if mode == "dynamic" or mode == "both" or mode == "hold" then
+									if mode == "dynamic" and library_flags[flagName] then
+										return Set(false)
+									end
+									Set(true)
+									local now = os.clock()
+									local waittil = nil
+									if mode == "dynamic" then
+										waittil = Instance.new("BindableEvent")
+									end
+									local xconnection = nil
+									xconnection = userInputService.InputEnded:Connect(function(input, chatting)
+										chatting = chatting or userInputService:GetFocusedTextBox()
+										if not chatting and (key == input.KeyCode or key == input.UserInputType) then
+											xconnection = (xconnection and xconnection:Disconnect() and nil) or nil
+											if mode == "hold" or os.clock() - now > math.clamp(tonumber(options.DynamicTime) or 0.65, 0.05, 20) then
+												Set(false)
+											end
+										end
+									end)
+									library.signals[1 + #library.signals] = xconnection
+								else
+									Set(not library_flags[flagName])
+								end
+							end
+						end
+					end)
+					local function kbset(t, key)
+						if nil == key and t ~= nil then
+							key = t
+						end
+						if key == "nil" or key == "NONE" or key == "none" then
+							key = nil
+						end
+						last_v = library_flags[kbflag]
+						bindedKey = key
+						library_flags[kbflag] = key
+						if options.Location then
+							options.Location[options.LocationFlag or kbflag] = key
+						end
+						keyName = (key == nil and "NONE") or keyHandler.allowedKeys[key]
+						keybindButton.Text = "[" .. (keyName or key.Name or tostring(key):gsub("Enum.KeyCode.", "")) .. "]"
+						keybindButton.Size = UDim2.fromOffset(textToSize(keybindButton).X + 4, 12)
+						justBinded = true
+						colored_keybindButton_TextColor3[3] = "otherElementText"
+						colored_keybindButton_TextColor3[4] = nil
+						tweenService:Create(keybindButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+							TextColor3 = library.colors.otherElementText
+						}):Play()
+						if callback and (last_v ~= key or options.AllowDuplicateCalls) then
+							task.spawn(callback, key, last_v)
+						end
+						return key
+					end
+					if presetKeybind ~= nil then
+						kbset(presetKeybind)
+					else
+						library_flags[kbflag] = bindedKey
+						if options.Location then
+							options.Location[options.LocationFlag or kbflag] = bindedKey
+						end
+					end
+					local default = library_flags[kbflag]
+					local function UpdateKb()
+						callback, kbpresscallback = options.Callback, options.Pressed
+						local key = library_flags[kbflag]
+						bindedKey = key
+						keyName = keyHandler.allowedKeys[bindedKey] or (bindedKey and (bindedKey.Name or tostring(bindedKey):gsub("Enum.KeyCode.", ""))) or "NONE"
+						keybindButton.Text = "[" .. (keyName or (key and key.Name) or tostring(key):gsub("Enum.KeyCode.", "")) .. "]"
+						keybindButton.Size = UDim2.fromOffset(textToSize(keybindButton).X + 4, 12)
+						colored_keybindButton_TextColor3[3] = "otherElementText"
+						colored_keybindButton_TextColor3[4] = (lockedup and 2.5) or nil
+						tweenService:Create(keybindButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+							TextColor3 = (lockedup and darkenColor(library.colors.otherElementText, colored_keybindButton_TextColor3[4])) or library.colors.otherElementText
+						}):Play()
+						return key
+					end
+					kbUpdate = UpdateKb
+					local objectdata = {
+						Options = options,
+						Name = kbflag,
+						Flag = kbflag,
+						Type = "Keybind",
+						Default = default,
+						Parent = sectionFunctions,
+						Instance = keybindButton,
+						Get = function()
+							return library_flags[kbflag]
+						end,
+						Set = kbset,
+						RawSet = function(t, key)
+							if t ~= nil and key == nil then
+								key = t
+							end
+							library_flags[kbflag] = key
+							UpdateKb()
+							return key
+						end,
+						Update = UpdateKb,
+						Reset = function()
+							return kbset(nil, default)
+						end
+					}
+					kbData = objectdata
+					tabFunctions.Flags[kbflag], sectionFunctions.Flags[kbflag], elements[kbflag] = objectdata, objectdata, objectdata
+				end
+				sectionFunctions:Update()
+				library.signals[1 + #library.signals] = toggleButton.MouseButton1Click:Connect(function()
+					if not library.colorpicker and not submenuOpen and not lockedup then
+						local newval = not library_flags[flagName]
+						if options.Condition ~= nil then
+							if type(options.Condition) == "function" then
+								local v, e = pcall(options.Condition, newval, not newval)
+								if e then
+									if not v then
+										warn(debug.traceback(string.format("Error in toggle %s's Condition function: %s", flagName, e), 2))
+									end
+								else
+									return last_v
+								end
+							end
+						end
+						library_flags[flagName] = newval
+						if options.Location then
+							options.Location[options.LocationFlag or flagName] = newval
+						end
+						colored_toggleInner_BackgroundColor3[3] = (newval and "main") or "topGradient"
+						colored_toggleInner_BackgroundColor3[4] = (newval and 1.5) or nil
+						colored_toggleInner_ImageColor3[3] = (newval and "main") or "bottomGradient"
+						colored_toggleInner_ImageColor3[4] = (newval and 2.5) or nil
+						tweenService:Create(toggleInner, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+							BackgroundColor3 = (newval and darkenColor(library.colors.main, 1.5)) or library.colors.topGradient,
+							ImageColor3 = (newval and darkenColor(library.colors.main, 2.5)) or library.colors.bottomGradient
+						}):Play()
+						if callback then
+							task.spawn(callback, newval)
+						end
+					end
+				end)
+				library.signals[1 + #library.signals] = newToggle.MouseEnter:Connect(function()
+					colored_toggle_BackgroundColor3[3] = "main"
+					colored_toggle_BackgroundColor3[4] = 1.5
+					colored_toggle_ImageColor3[3] = "main"
+					colored_toggle_ImageColor3[4] = 2.5
+					tweenService:Create(toggle, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+						BackgroundColor3 = darkenColor(library.colors.main, 1.5),
+						ImageColor3 = darkenColor(library.colors.main, 2.5)
+					}):Play()
+				end)
+				library.signals[1 + #library.signals] = newToggle.MouseLeave:Connect(function()
+					colored_toggle_BackgroundColor3[3] = "topGradient"
+					colored_toggle_BackgroundColor3[4] = nil
+					colored_toggle_ImageColor3[3] = "bottomGradient"
+					colored_toggle_ImageColor3[4] = nil
+					tweenService:Create(toggle, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+						BackgroundColor3 = library.colors.topGradient,
+						ImageColor3 = library.colors.bottomGradient
+					}):Play()
+				end)
+				if library_flags[flagName] then
+					colored_toggleInner_BackgroundColor3[3] = "main"
+					colored_toggleInner_BackgroundColor3[4] = 1.5
+					colored_toggleInner_ImageColor3[3] = "main"
+					colored_toggleInner_ImageColor3[4] = 2.5
+					tweenService:Create(toggleInner, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+						BackgroundColor3 = darkenColor(library.colors.main, 1.5),
+						ImageColor3 = darkenColor(library.colors.main, 2.5)
+					}):Play()
+				end
+				local function Update()
+					toggleName, callback = options.Name or toggleName, options.Callback
+					local boolstatus = library_flags[flagName]
+					colored_toggleInner_BackgroundColor3[3] = (boolstatus and "main") or "topGradient"
+					colored_toggleInner_BackgroundColor3[4] = (boolstatus and 1.5) or nil
+					colored_toggleInner_ImageColor3[3] = (boolstatus and "main") or "bottomGradient"
+					colored_toggleInner_ImageColor3[4] = (boolstatus and 2.5) or nil
+					if lockedup then
+						colored_toggleInner_BackgroundColor3[4] = 1 + (colored_toggleInner_BackgroundColor3[4] or 1)
+						colored_toggleInner_ImageColor3[4] = 1 + (colored_toggleInner_ImageColor3[4] or 1)
+					end
+					tweenService:Create(toggleInner, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+						BackgroundColor3 = (boolstatus and darkenColor(library.colors.main, colored_toggleInner_BackgroundColor3[4])) or library.colors.topGradient,
+						ImageColor3 = (boolstatus and darkenColor(library.colors.main, colored_toggleInner_ImageColor3[4])) or library.colors.bottomGradient
+					}):Play()
+					colored_toggleHeadline_TextColor3[4] = (lockedup and 2.5) or nil
+					tweenService:Create(toggleHeadline, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+						TextColor3 = (lockedup and darkenColor(library.colors.elementText, colored_toggleHeadline_TextColor3[4])) or library.colors.elementText
+					}):Play()
+					toggleHeadline.Text = toggleName or "???"
+					return boolstatus
+				end
+				if alreadyEnabled ~= nil then
+					Set(alreadyEnabled)
+				else
+					library_flags[flagName] = not not alreadyEnabled
+					if options.Location then
+						options.Location[options.LocationFlag or flagName] = not not alreadyEnabled
+					end
+				end
+				local default = not not library_flags[flagName]
+				Update()
+				if kbUpdate then
+					kbUpdate()
+				end
+				local objectdata = {
+					Options = options,
+					Type = "Toggle",
+					Name = flagName,
+					Flag = flagName,
+					Default = default,
+					Parent = sectionFunctions,
+					Instance = toggleButton,
+					Set = Set,
+					RawSet = function(t, newStatus, condition)
+						if t ~= nil and type(t) ~= "table" then
+							newStatus, condition = t, newStatus
+						end
+						last_v = library_flags[flagName]
+						if condition ~= false and condition ~= 0 then
+							local overridecondition = condition and type(condition) == "function" and condition
+							if overridecondition or options.Condition ~= nil then
+								if type(overridecondition or options.Condition) == "function" then
+									local v, e = pcall(overridecondition or options.Condition, newStatus, last_v)
+									if e then
+										if not v then
+											warn(debug.traceback(string.format("Error in toggle (RawSet) %s's Condition function: %s", flagName, e), 2))
+										end
+									else
+										return last_v
+									end
+								end
+							end
+						end
+						library_flags[flagName] = newStatus
+						if options.Location then
+							options.Location[options.LocationFlag or flagName] = newStatus
+						end
+						Update()
+						return newStatus
+					end,
+					KeybindData = kbData,
+					Get = function()
+						return library_flags[flagName]
+					end,
+					Update = Update,
+					Reset = function()
+						return Set(nil, default)
+					end,
+					SetLocked = function(t, state)
+						if type(t) ~= "table" then
+							state = t
+						end
+						local last_v = lockedup
+						if state == nil then
+							lockedup = not lockedup
+						else
+							lockedup = state
+						end
+						if lockedup ~= last_v then
+							colored_toggleHeadline_TextColor3[4] = (lockedup and 2.5) or nil
+							Update()
+							if kbUpdate then
+								kbUpdate()
+							end
+						end
+						return lockedup
+					end,
+					Lock = function()
+						if not lockedup then
+							lockedup = true
+							colored_toggleHeadline_TextColor3[4] = 2.5
+							Update()
+							if kbUpdate then
+								kbUpdate()
+							end
+						end
+						return lockedup
+					end,
+					Unlock = function()
+						if lockedup then
+							lockedup = false
+							colored_toggleHeadline_TextColor3[4] = nil
+							Update()
+							if kbUpdate then
+								kbUpdate()
+							end
+						end
+						return lockedup
+					end,
+					SetCondition = function(t, condition)
+						if type(t) ~= "table" and condition == nil then
+							condition = t
+						end
+						options.Condition = condition
+						return condition
+					end
+				}
+				if kbData then
+					kbData.ToggleData = objectdata
+				end
+				tabFunctions.Flags[flagName], sectionFunctions.Flags[flagName], elements[flagName] = objectdata, objectdata, objectdata
+				return objectdata
+			end
+			sectionFunctions.CreateToggle = sectionFunctions.AddToggle
+			sectionFunctions.NewToggle = sectionFunctions.AddToggle
+			sectionFunctions.Toggle = sectionFunctions.AddToggle
+			sectionFunctions.Tog = sectionFunctions.AddToggle
+			function sectionFunctions:AddButton(...)
+				local args = nil
+				if ... and not select(2, ...) and type(...) == "table" and #... > 0 and type((...)[1]) == "table" and (...)[1].Name then
+					args = ...
+				else
+					args = {...}
+				end
+				local buttons, offset = {}, 0
+				local fram = nil
+				for _, options in next, args do
+					options = (options and options[1] and type(options[1]) == "string" and resolvevararg("Button", unpack(options))) or options
+					local buttonName, callback = assert(options.Name, "Missing Name for new button."), options.Callback or (warn("AddButton missing callback. Name:", options.Name or "No Name", debug.traceback("")) and nil) or function()
+					end
+					local lockedup = options.Locked
+					local realButton = Instance_new("TextButton")
+					realButton.Name = "realButton"
+					realButton.BackgroundColor3 = Color3.new(1, 1, 1)
+					realButton.BackgroundTransparency = 1
+					realButton.Size = UDim2.fromScale(1, 1)
+					realButton.ZIndex = 5
+					realButton.Font = Enum.Font.Code
+					realButton.Text = (buttonName and tostring(buttonName)) or "???"
+					realButton.TextColor3 = library.colors.elementText
+					local colored_realButton_TextColor3 = {realButton, "TextColor3", "elementText"}
+					colored[1 + #colored] = colored_realButton_TextColor3
+					realButton.TextSize = 14
+					local textsize = textToSize(realButton).X + 14
+					if newSection.Parent.AbsoluteSize.X < offset + textsize + 8 then
+						offset, fram = 0, nil
+					end
+					local newButton = fram or Instance_new("Frame")
+					fram = newButton
+					local button = Instance_new("ImageLabel")
+					newButton.Name = removeSpaces((buttonName and buttonName:lower() or "???") .. "Holder")
+					newButton.Parent = sectionHolder
+					newButton.BackgroundColor3 = Color3.new(1, 1, 1)
+					newButton.BackgroundTransparency = 1
+					newButton.Size = UDim2.new(1, 0, 0, 24)
+					button.Name = "button"
+					button.Parent = newButton
+					button.Active = true
+					button.BackgroundColor3 = library.colors.topGradient
+					local colored_button_BackgroundColor3 = {button, "BackgroundColor3", "topGradient"}
+					colored[1 + #colored] = colored_button_BackgroundColor3
+					button.BorderColor3 = library.colors.elementBorder
+					colored[1 + #colored] = {button, "BorderColor3", "elementBorder"}
+					button.Position = UDim2.new(0.031, offset, 0.166)
+					button.Selectable = true
+					button.Size = UDim2.fromOffset(28, 18)
+					button.Image = "rbxassetid://2454009026"
+					button.ImageColor3 = library.colors.bottomGradient
+					local colored_button_ImageColor3 = {button, "ImageColor3", "bottomGradient"}
+					colored[1 + #colored] = colored_button_ImageColor3
+					local buttonInner = Instance_new("ImageLabel")
+					buttonInner.Name = "buttonInner"
+					buttonInner.Parent = button
+					buttonInner.Active = true
+					buttonInner.AnchorPoint = Vector2.new(0.5, 0.5)
+					buttonInner.BackgroundColor3 = library.colors.topGradient
+					local colored_buttonInner_BackgroundColor3 = {buttonInner, "BackgroundColor3", "topGradient"}
+					colored[1 + #colored] = colored_buttonInner_BackgroundColor3
+					buttonInner.BorderColor3 = library.colors.elementBorder
+					colored[1 + #colored] = {buttonInner, "BorderColor3", "elementBorder"}
+					buttonInner.Position = UDim2.fromScale(0.5, 0.5)
+					buttonInner.Selectable = true
+					buttonInner.Size = UDim2.new(1, -4, 1, -4)
+					buttonInner.Image = "rbxassetid://2454009026"
+					buttonInner.ImageColor3 = library.colors.bottomGradient
+					local colored_buttonInner_ImageColor3 = {buttonInner, "ImageColor3", "bottomGradient"}
+					colored[1 + #colored] = colored_buttonInner_ImageColor3
+					button.Size = UDim2.fromOffset(textsize, 18)
+					realButton.Parent = button
+					offset = offset + textsize + 6
+					sectionFunctions:Update()
+					local presses = 0
+					library.signals[1 + #library.signals] = realButton.MouseButton1Click:Connect(function()
+						if lockedup then
+							return
+						end
+						if options.Condition ~= nil and type(options.Condition) == "function" then
+							local v, e = pcall(options.Condition, presses)
+							if e then
+								if not v then
+									warn(debug.traceback(string.format("Error in button %s's Condition function: %s", buttonName, e), 2))
+								end
+							else
+								return
+							end
+						end
+						if not library.colorpicker and not submenuOpen then
+							presses = 1 + presses
+							task.spawn(callback, presses)
+						end
+					end)
+					local imin = nil
+					library.signals[1 + #library.signals] = button.MouseEnter:Connect(function()
+						imin = 1
+						colored_button_BackgroundColor3[3] = "main"
+						colored_button_BackgroundColor3[4] = 1.5
+						colored_button_ImageColor3[3] = "main"
+						colored_button_ImageColor3[4] = 2.5
+						tweenService:Create(button, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+							BackgroundColor3 = darkenColor(library.colors.main, 1.5),
+							ImageColor3 = darkenColor(library.colors.main, 2.5)
+						}):Play()
+					end)
+					library.signals[1 + #library.signals] = button.MouseLeave:Connect(function()
+						imin = nil
+						colored_button_BackgroundColor3[3] = "topGradient"
+						colored_button_BackgroundColor3[4] = nil
+						colored_button_ImageColor3[3] = "bottomGradient"
+						colored_button_ImageColor3[4] = nil
+						tweenService:Create(button, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+							BackgroundColor3 = library.colors.topGradient,
+							ImageColor3 = library.colors.bottomGradient
+						}):Play()
+					end)
+					local function Update()
+						buttonName, callback = options.Name or buttonName, options.Callback or (warn(debug.traceback("AddButton missing callback. Name:" .. (options.Name or buttonName or "No Name"), 2)) and nil) or function()
+						end
+						colored_button_BackgroundColor3[3] = (imin and "main") or "topGradient"
+						colored_button_BackgroundColor3[4] = (imin and 1.5) or nil
+						colored_button_ImageColor3[3] = (imin and "main") or "bottomGradient"
+						colored_button_ImageColor3[4] = (imin and 2.5) or nil
+						colored_buttonInner_BackgroundColor3[4] = nil
+						colored_buttonInner_ImageColor3[4] = nil
+						colored_realButton_TextColor3[4] = nil
+						if lockedup then
+							colored_button_BackgroundColor3[4] = 1.25
+							colored_button_ImageColor3[4] = 1.25
+							colored_buttonInner_BackgroundColor3[4] = 1.25
+							colored_buttonInner_ImageColor3[4] = 1.25
+							colored_realButton_TextColor3[4] = 1.75
+						end
+						tweenService:Create(button, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+							BackgroundColor3 = (imin and darkenColor(library.colors.main, colored_button_BackgroundColor3[4])) or darkenColor(library.colors.topGradient, colored_button_BackgroundColor3[4]),
+							ImageColor3 = (imin and darkenColor(library.colors.main, colored_button_ImageColor3[4])) or darkenColor(library.colors.bottomGradient, colored_button_ImageColor3[4])
+						}):Play()
+						tweenService:Create(buttonInner, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+							BackgroundColor3 = darkenColor(library.colors.topGradient, colored_buttonInner_BackgroundColor3[4]),
+							ImageColor3 = darkenColor(library.colors.bottomGradient, colored_buttonInner_ImageColor3[4])
+						}):Play()
+						tweenService:Create(realButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+							TextColor3 = darkenColor(library.colors.elementText, colored_realButton_TextColor3[4])
+						}):Play()
+						realButton.Text = (buttonName and tostring(buttonName)) or "???"
+						return presses
+					end
+					Update()
+					local objectdata = {
+						Options = options,
+						Name = buttonName,
+						Flag = buttonName,
+						Type = "Button",
+						Parent = sectionFunctions,
+						Instance = realButton,
+						Press = function(...)
+							if lockedup then
+								return presses
+							end
+							if options.Condition ~= nil and type(options.Condition) == "function" then
+								local v, e = pcall(options.Condition, presses)
+								if e then
+									if not v then
+										warn(debug.traceback(string.format("Error in button %s's Condition function: %s", buttonName, e), 2))
+									end
+								else
+									return presses
+								end
+							end
+							local args = {...}
+							local a1 = args[1]
+							if a1 and type(a1) == "table" then
+								table.remove(args, 1)
+							end
+							presses = 1 + presses
+							task.spawn(callback, presses, ...)
+							return presses
+						end,
+						RawPress = function(...)
+							local args = {...}
+							local a1 = args[1]
+							if a1 and type(a1) == "table" then
+								table.remove(args, 1)
+							end
+							task.spawn(callback, presses, ...)
+							return presses
+						end,
+						Get = function()
+							return callback, presses
+						end,
+						SetLocked = function(t, state)
+							if type(t) ~= "table" then
+								state = t
+							end
+							local last_v = lockedup
+							if state == nil then
+								lockedup = not lockedup
+							else
+								lockedup = state
+							end
+							if lockedup ~= last_v then
+								Update()
+							end
+							return lockedup
+						end,
+						Lock = function()
+							if not lockedup then
+								lockedup = true
+								Update()
+							end
+							return lockedup
+						end,
+						Unlock = function()
+							if lockedup then
+								lockedup = false
+								Update()
+							end
+							return lockedup
+						end,
+						SetCondition = function(t, condition)
+							if type(t) ~= "table" and condition == nil then
+								condition = t
+							end
+							options.Condition = condition
+							return condition
+						end,
+						Update = Update,
+						SetText = function(t, str)
+							if type(t) ~= "table" and str == nil then
+								str = t
+							end
+							buttonName = str
+							options.Name = str
+							realButton.Text = (buttonName and tostring(buttonName)) or "???"
+							return str
+						end,
+						SetCallback = function(t, call)
+							if type(t) ~= "table" and call == nil then
+								call = t
+							end
+							options.Callback = call
+							callback = call
+							return call
+						end
+					}
+					tabFunctions.Flags[buttonName], sectionFunctions.Flags[buttonName], elements[buttonName] = objectdata, objectdata, objectdata
+					buttons[1 + #buttons] = objectdata
+				end
+				function buttons.PressAll()
+					for _, v in next, buttons do
+						v.Press()
+					end
+				end
+				function buttons.UpdateAll()
+					for _, v in next, buttons do
+						v.Update()
+					end
+				end
+				if #buttons == 1 then
+					for k, v in next, buttons[1] do
+						if buttons[k] == nil then
+							buttons[k] = v
+						end
+					end
+				end
+				return buttons
+			end
+			sectionFunctions.CreateButton = sectionFunctions.AddButton
+			sectionFunctions.NewButton = sectionFunctions.AddButton
+			sectionFunctions.Button = sectionFunctions.AddButton
+			function sectionFunctions:AddTextbox(options, ...)
+				options = (options and type(options) == "string" and resolvevararg("Textbox", options, ...)) or options
+				local textboxName, presetValue, placeholder, callback, flagName = assert(options.Name, "Missing Name for new textbox."), options.Value, options.Placeholder, options.Callback, options.Flag or (function()
+					library.unnamedtextboxes = 1 + (library.unnamedtextboxes or 0)
+					return "Textbox" .. tostring(library.unnamedtextboxes)
+				end)()
+				if elements[flagName] ~= nil then
+					warn(debug.traceback("Warning! Re-used flag '" .. flagName .. "'", 3))
+				end
+				local requiredtype = options.Type
+				local newTextbox = Instance_new("Frame")
+				local textbox = Instance_new("ImageLabel")
+				local textboxInner = Instance_new("ImageLabel")
+				local realTextbox = Instance_new("TextBox")
+				local textboxHeadline = Instance_new("TextLabel")
+				newTextbox.Name = removeSpaces((textboxName and textboxName:lower()) or "???") .. "Holder"
+				newTextbox.Parent = sectionHolder
+				newTextbox.BackgroundColor3 = Color3.new(1, 1, 1)
+				newTextbox.BackgroundTransparency = 1
+				newTextbox.Size = UDim2.new(1, 0, 0, 42)
+				textbox.Name = "textbox"
+				textbox.Parent = newTextbox
+				textbox.Active = true
+				textbox.BackgroundColor3 = library.colors.topGradient
+				local colored_textbox_BackgroundColor3 = {textbox, "BackgroundColor3", "topGradient"}
+				colored[1 + #colored] = colored_textbox_BackgroundColor3
+				textbox.BorderColor3 = library.colors.elementBorder
+				colored[1 + #colored] = {textbox, "BorderColor3", "elementBorder"}
+				textbox.Position = UDim2.fromScale(0.031, 0.48)
+				textbox.Selectable = true
+				textbox.Size = UDim2.fromOffset(206, 18)
+				textbox.Image = "rbxassetid://2454009026"
+				textbox.ImageColor3 = library.colors.bottomGradient
+				local colored_textbox_ImageColor3 = {textbox, "ImageColor3", "bottomGradient"}
+				colored[1 + #colored] = colored_textbox_ImageColor3
+				textboxInner.Name = "textboxInner"
+				textboxInner.Parent = textbox
+				textboxInner.Active = true
+				textboxInner.AnchorPoint = Vector2.new(0.5, 0.5)
+				textboxInner.BackgroundColor3 = library.colors.topGradient
+				colored[1 + #colored] = {textboxInner, "BackgroundColor3", "topGradient"}
+				textboxInner.BorderColor3 = library.colors.elementBorder
+				colored[1 + #colored] = {textboxInner, "BorderColor3", "elementBorder"}
+				textboxInner.Position = UDim2.fromScale(0.5, 0.5)
+				textboxInner.Selectable = true
+				textboxInner.Size = UDim2.new(1, -4, 1, -4)
+				textboxInner.Image = "rbxassetid://2454009026"
+				textboxInner.ImageColor3 = library.colors.bottomGradient
+				colored[1 + #colored] = {textboxInner, "ImageColor3", "bottomGradient"}
+				realTextbox.Name = "realTextbox"
+				if options.Rich or options.RichText or options.RichTextBox then
+					realTextbox.RichText = true
+				end
+				if options.MultiLine or options.Lines then
+					realTextbox.MultiLine = true
+				end
+				if options.Font or options.TextFont then
+					realTextbox.Font = options.Font
+				end
+				if options.TextScaled or options.Scaled then
+					realTextbox.TextScaled = true
+				end
+				realTextbox.BackgroundColor3 = Color3.new(1, 1, 1)
+				realTextbox.BackgroundTransparency = 1
+				realTextbox.Position = UDim2.new(0.0295485705)
+				realTextbox.Size = UDim2.fromScale(0.97, 1)
+				realTextbox.ZIndex = 5
+				realTextbox.Font = Enum.Font.Code
+				realTextbox.LineHeight = 1.15
+				realTextbox.Text = tostring(presetValue)
+				realTextbox.TextColor3 = library.colors.otherElementText
+				colored[1 + #colored] = {realTextbox, "TextColor3", "otherElementText"}
+				realTextbox.TextSize = 14
+				if options.ClearTextOnFocus or options.ClearText then
+					realTextbox.ClearTextOnFocus = true
+				else
+					realTextbox.ClearTextOnFocus = false
+				end
+				realTextbox.PlaceholderText = (placeholder ~= nil and tostring(placeholder)) or (presetValue ~= nil and tostring(presetValue)) or ""
+				realTextbox.TextXAlignment = Enum.TextXAlignment.Left
+				if options.CustomProperties and type(options.CustomProperties) == "table" then
+					for k, v in next, options.CustomProperties do
+						local oof, e = pcall(function()
+							realTextbox[k] = v
+						end)
+						if not oof and e then
+							warn("Error setting Textbox", flagName, "|", e, debug.traceback(""))
+						end
+					end
+				end
+				realTextbox.Parent = textbox
+				textboxHeadline.Name = "textboxHeadline"
+				textboxHeadline.Parent = newTextbox
+				textboxHeadline.Active = true
+				textboxHeadline.BackgroundColor3 = Color3.new(1, 1, 1)
+				textboxHeadline.BackgroundTransparency = 1
+				textboxHeadline.Position = UDim2.new(0.031)
+				textboxHeadline.Selectable = true
+				textboxHeadline.Size = UDim2.fromOffset(206, 20)
+				textboxHeadline.ZIndex = 5
+				textboxHeadline.Font = Enum.Font.Code
+				textboxHeadline.LineHeight = 1.15
+				textboxHeadline.Text = (textboxName and tostring(textboxName)) or "???"
+				textboxHeadline.TextColor3 = library.colors.elementText
+				colored[1 + #colored] = {textboxHeadline, "TextColor3", "elementText"}
+				textboxHeadline.TextSize = 14
+				textboxHeadline.TextXAlignment = Enum.TextXAlignment.Left
+				sectionFunctions:Update()
+				local last_v = presetValue
+				local function resolvevalue(val)
+					if options.PreFormat then
+						local typ = type(options.PreFormat)
+						if typ == "function" then
+							local x, e = pcall(options.PreFormat, val)
+							if not x and e then
+								warn("Error in Pre-Format (Textbox " .. flagName .. "):", e)
+							else
+								val = e
+							end
+						end
+					end
+					if requiredtype == "number" then
+						if not options.Hex and not options.Binary and not options.Base then
+							val = tonumber(val) or tonumber(val:gsub("%D", ""), 10) or 0
+						else
+							val = tonumber(val, (options.Hex and 16) or (options.Binary and 2) or options.Base or 10) or 0
+						end
+						if options.Max or options.Min then
+							val = math.clamp(val, options.Min or -math.huge, options.Max or math.huge)
+						end
+						local decimalprecision = tonumber(options.Decimals or options.Precision or options.Precise)
+						if decimalprecision then
+							val = tonumber(string.format("%0." .. tostring(decimalprecision) .. "f", val))
+						end
+					end
+					if options.PostFormat then
+						local typ = type(options.PostFormat)
+						if typ == "function" then
+							local x, e = pcall(options.PostFormat, val)
+							if not x and e then
+								warn("Error in Post-Format (Textbox " .. flagName .. "):", e)
+							else
+								val = e
+							end
+						end
+					end
+					return (val and tonumber(val)) or val
+				end
+				library.signals[1 + #library.signals] = realTextbox.FocusLost:Connect(function()
+					last_v = library_flags[flagName]
+					local val = resolvevalue(realTextbox.Text)
+					library_flags[flagName] = val
+					if options.Location then
+						options.Location[options.LocationFlag or flagName] = val
+					end
+					if callback and last_v ~= val then
+						task.spawn(callback, tostring(val), last_v, realTextbox)
+					end
+				end)
+				library.signals[1 + #library.signals] = newTextbox.MouseEnter:Connect(function()
+					colored_textbox_BackgroundColor3[3] = "main"
+					colored_textbox_BackgroundColor3[4] = 1.5
+					colored_textbox_ImageColor3[3] = "main"
+					colored_textbox_ImageColor3[4] = 2.5
+					tweenService:Create(textbox, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+						BackgroundColor3 = darkenColor(library.colors.main, 1.5),
+						ImageColor3 = darkenColor(library.colors.main, 2.5)
+					}):Play()
+				end)
+				library.signals[1 + #library.signals] = newTextbox.MouseLeave:Connect(function()
+					colored_textbox_BackgroundColor3[3] = "topGradient"
+					colored_textbox_BackgroundColor3[4] = nil
+					colored_textbox_ImageColor3[3] = "bottomGradient"
+					colored_textbox_ImageColor3[4] = nil
+					tweenService:Create(textbox, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+						BackgroundColor3 = library.colors.topGradient,
+						ImageColor3 = library.colors.bottomGradient
+					}):Play()
+				end)
+				local function set(t, str)
+					if nil == str and t ~= nil then
+						str = t
+					end
+					last_v = library_flags[flagName]
+					library_flags[flagName] = str
+					if options.Location then
+						options.Location[options.LocationFlag or flagName] = str
+					end
+					local sstr = (str ~= nil and tostring(str)) or "Empty Text"
+					if realTextbox.Text ~= sstr then
+						realTextbox.Text = sstr
+					end
+					if callback and (last_v ~= str or options.AllowDuplicateCalls) then
+						task.spawn(callback, str, last_v, realTextbox)
+					end
+					return str
+				end
+				if presetValue ~= nil then
+					set(presetValue)
+				else
+					library_flags[flagName] = presetValue
+					if options.Location then
+						options.Location[options.LocationFlag or flagName] = presetValue
+					end
+				end
+				local default = library_flags[flagName]
+				local function update()
+					textboxName, placeholder, callback = options.Name or textboxName, options.Placeholder or placeholder, options.Callback
+					local str = library_flags[flagName]
+					str = (str ~= nil and tostring(str)) or "Empty Text"
+					if realTextbox.Text ~= str then
+						realTextbox.Text = str
+					end
+					textboxHeadline.Text = (textboxName and tostring(textboxName)) or "???"
+					return str
+				end
+				local objectdata = {
+					Options = options,
+					Name = flagName,
+					Flag = flagName,
+					Type = "Textbox",
+					Default = default,
+					Parent = sectionFunctions,
+					Instance = realTextbox,
+					Get = function()
+						return library_flags[flagName]
+					end,
+					Set = set,
+					Update = update,
+					RawSet = function(t, str)
+						if t ~= nil and str == nil then
+							str = t
+						end
+						last_v = library_flags[flagName]
+						library_flags[flagName] = str
+						if options.Location then
+							options.Location[options.LocationFlag or flagName] = str
+						end
+						update()
+						return str
+					end,
+					Reset = function()
+						return set(nil, default)
+					end
+				}
+				tabFunctions.Flags[flagName], sectionFunctions.Flags[flagName], elements[flagName] = objectdata, objectdata, objectdata
+				return objectdata
+			end
+			sectionFunctions.AddTextBox = sectionFunctions.AddTextbox
+			sectionFunctions.NewTextBox = sectionFunctions.AddTextbox
+			sectionFunctions.CreateTextBox = sectionFunctions.AddTextbox
+			sectionFunctions.TextBox = sectionFunctions.AddTextbox
+			sectionFunctions.NewTextbox = sectionFunctions.AddTextbox
+			sectionFunctions.CreateTextbox = sectionFunctions.AddTextbox
+			sectionFunctions.Textbox = sectionFunctions.AddTextbox
+			sectionFunctions.Box = sectionFunctions.AddTextbox
+			function sectionFunctions:AddKeybind(options, ...)
+				options = (options and type(options) == "string" and resolvevararg("Keybind", options, ...)) or options
+				local keybindName, presetKeybind, callback, presscallback, flag = assert(options.Name, "Missing Name for new keybind."), options.Value, options.Callback, options.Pressed, options.Flag or (function()
+					library.unnamedkeybinds = 1 + (library.unnamedkeybinds or 0)
+					return "Keybind" .. tostring(library.unnamedkeybinds)
+				end)()
+				if elements[flag] ~= nil then
+					warn(debug.traceback("Warning! Re-used flag '" .. flag .. "'", 3))
+				end
+				library.keyHandler = keyHandler
+				local keyHandler = options.KeyNames or keyHandler
+				local newKeybind = Instance_new("Frame")
+				local keybindHeadline = Instance_new("TextLabel")
+				local keybindPositioner = Instance_new("Frame")
+				local keybindList = Instance_new("UIListLayout")
+				local keybindButton = Instance_new("TextButton")
+				local bindedKey = presetKeybind
+				local justBinded = false
+				local keyName = (presetKeybind and tostring(presetKeybind):gsub("Enum.KeyCode.", "") or "")
+				newKeybind.Name = "newKeybind"
+				newKeybind.Parent = sectionHolder
+				newKeybind.BackgroundColor3 = Color3.new(1, 1, 1)
+				newKeybind.BackgroundTransparency = 1
+				newKeybind.Size = UDim2.new(1, 0, 0, 19)
+				keybindHeadline.Name = "keybindHeadline"
+				keybindHeadline.Parent = newKeybind
+				keybindHeadline.BackgroundColor3 = Color3.new(1, 1, 1)
+				keybindHeadline.BackgroundTransparency = 1
+				keybindHeadline.Position = UDim2.fromScale(0.031, 0.165842161)
+				keybindHeadline.Size = UDim2.fromOffset(215, 12)
+				keybindHeadline.Font = Enum.Font.Code
+				keybindHeadline.Text = (keybindName and tostring(keybindName)) or "???"
+				keybindHeadline.TextColor3 = library.colors.elementText
+				colored[1 + #colored] = {keybindHeadline, "TextColor3", "elementText"}
+				keybindHeadline.TextSize = 14
+				keybindHeadline.TextXAlignment = Enum.TextXAlignment.Left
+				keybindPositioner.Name = "keybindPositioner"
+				keybindPositioner.Parent = newKeybind
+				keybindPositioner.BackgroundColor3 = Color3.new(1, 1, 1)
+				keybindPositioner.BackgroundTransparency = 1
+				keybindPositioner.Position = UDim2.new(0.00448430516)
+				keybindPositioner.Size = UDim2.fromOffset(214, 19)
+				keybindList.Name = "keybindList"
+				keybindList.Parent = keybindPositioner
+				keybindList.FillDirection = Enum.FillDirection.Horizontal
+				keybindList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+				keybindList.SortOrder = Enum.SortOrder.LayoutOrder
+				keybindList.VerticalAlignment = Enum.VerticalAlignment.Center
+				keybindButton.Name = "keybindButton"
+				keybindButton.Parent = keybindPositioner
+				keybindButton.Active = false
+				keybindButton.BackgroundColor3 = Color3.new(1, 1, 1)
+				keybindButton.BackgroundTransparency = 1
+				keybindButton.Position = UDim2.fromScale(0.598130822, 0.184210524)
+				keybindButton.Selectable = false
+				keybindButton.Size = UDim2.fromOffset(46, 12)
+				keybindButton.Font = Enum.Font.Code
+				keybindButton.Text = (presetKeybind and tostring(presetKeybind):gsub("Enum.KeyCode.", "") or "[NONE]")
+				keybindButton.TextColor3 = library.colors.otherElementText
+				local colored_keybindButton_TextColor3 = {keybindButton, "TextColor3", "otherElementText"}
+				colored[1 + #colored] = colored_keybindButton_TextColor3
+				keybindButton.TextSize = 14
+				keybindButton.TextXAlignment = Enum.TextXAlignment.Right
+				keybindButton.Size = UDim2.fromOffset(textToSize(keybindButton).X + 4, 12)
+				sectionFunctions:Update()
+				local last_v = bindedKey or presetKeybind
+				local function newkey()
+					local old_texts = keybindButton.Text
+					colored_keybindButton_TextColor3[3] = "main"
+					colored_keybindButton_TextColor3[4] = nil
+					tweenService:Create(keybindButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+						TextColor3 = library.colors.main
+					}):Play()
+					if last_v then
+						keybindButton.Text = "(Was " .. (last_v and tostring(last_v):gsub("Enum.KeyCode.", "") or "[NONE]") .. ") [...]"
+					else
+						keybindButton.Text = "[...]"
+					end
+					local receivingKey = nil
+					receivingKey = userInputService.InputBegan:Connect(function(key)
+						last_v = library_flags[flag]
+						if not keyHandler.notAllowedKeys[key.KeyCode] then
+							if key.KeyCode ~= Enum.KeyCode.Unknown then
+								bindedKey = (key.KeyCode ~= Enum.KeyCode.Escape and key.KeyCode) or library_flags[flag]
+								library_flags[flag] = bindedKey
+								if options.Location then
+									options.Location[options.LocationFlag or flag] = bindedKey
+								end
+								if bindedKey then
+									keyName = keyHandler.allowedKeys[bindedKey]
+									keybindButton.Text = "[" .. (keyName or bindedKey.Name or tostring(key.KeyCode):gsub("Enum.KeyCode.", "")) .. "]"
+									keybindButton.Size = UDim2.fromOffset(textToSize(keybindButton).X + 4, 12)
+									justBinded = true
+									colored_keybindButton_TextColor3[3] = "otherElementText"
+									colored_keybindButton_TextColor3[4] = nil
+									tweenService:Create(keybindButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+										TextColor3 = library.colors.otherElementText
+									}):Play()
+									receivingKey:Disconnect()
+								end
+								if callback and last_v ~= bindedKey then
+									task.spawn(callback, bindedKey, last_v)
+								end
+								return
+							elseif key.KeyCode == Enum.KeyCode.Unknown and not keyHandler.notAllowedMouseInputs[key.UserInputType] then
+								bindedKey = key.UserInputType
+								library_flags[flag] = bindedKey
+								if options.Location then
+									options.Location[options.LocationFlag or flag] = bindedKey
+								end
+								keyName = keyHandler.allowedKeys[bindedKey]
+								keybindButton.Text = "[" .. (keyName or bindedKey.Name or tostring(key.KeyCode):gsub("Enum.KeyCode.", "")) .. "]"
+								keybindButton.Size = UDim2.fromOffset(textToSize(keybindButton).X + 4, 12)
+								justBinded = true
+								colored_keybindButton_TextColor3[3] = "otherElementText"
+								colored_keybindButton_TextColor3[4] = nil
+								tweenService:Create(keybindButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+									TextColor3 = library.colors.otherElementText
+								}):Play()
+								receivingKey:Disconnect()
+								if callback and last_v ~= bindedKey then
+									task.spawn(callback, bindedKey, last_v)
+								end
+								return
+							end
+						end
+						if key.KeyCode == Enum.KeyCode.Backspace or Enum.KeyCode.Escape == key.KeyCode then
+							old_texts, bindedKey = "[NONE]", nil
+						end
+						keybindButton.Text = old_texts
+						colored_keybindButton_TextColor3[3] = "otherElementText"
+						colored_keybindButton_TextColor3[4] = nil
+						tweenService:Create(keybindButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+							TextColor3 = library.colors.otherElementText
+						}):Play()
+						receivingKey:Disconnect()
+						if callback and last_v ~= bindedKey then
+							task.spawn(callback, bindedKey, last_v)
+						end
+					end)
+					library.signals[1 + #library.signals] = receivingKey
+				end
+				library.signals[1 + #library.signals] = keybindButton.MouseButton1Click:Connect(newkey)
+				library.signals[1 + #library.signals] = newKeybind.InputEnded:Connect(function(input)
+					if not library.colorpicker and not submenuOpen and input.UserInputType == Enum.UserInputType.MouseButton1 then
+						newkey()
+					end
+				end)
+				if presscallback then
+					library.signals[1 + #library.signals] = userInputService.InputBegan:Connect(function(key, chatting)
+						if not keyHandler.notAllowedKeys[key.KeyCode] and not keyHandler.notAllowedMouseInputs[key.UserInputType] then
+							if not justBinded and bindedKey == key.UserInputType or not justBinded and bindedKey == key.KeyCode and not chatting then
+								if presscallback then
+									task.spawn(presscallback, key, chatting)
+								end
+							end
+							if justBinded then
+								justBinded = false
+							end
+						end
+					end)
+				end
+				local function set(t, key)
+					if nil == key and t ~= nil then
+						key = t
+					end
+					if key == "nil" or key == "NONE" or key == "none" then
+						key = nil
+					end
+					last_v = library_flags[flag]
+					bindedKey = key
+					library_flags[flag] = key
+					if options.Location then
+						options.Location[options.LocationFlag or flag] = key
+					end
+					keyName = (key == nil and "NONE") or keyHandler.allowedKeys[key]
+					keybindButton.Text = "[" .. (keyName or key.Name or tostring(key):gsub("Enum.KeyCode.", "")) .. "]"
+					keybindButton.Size = UDim2.fromOffset(textToSize(keybindButton).X + 4, 12)
+					justBinded = true
+					colored_keybindButton_TextColor3[3] = "otherElementText"
+					colored_keybindButton_TextColor3[4] = nil
+					tweenService:Create(keybindButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+						TextColor3 = library.colors.otherElementText
+					}):Play()
+					if callback and (last_v ~= key or options.AllowDuplicateCalls) then
+						task.spawn(callback, key, last_v)
+					end
+					return key
+				end
+				if presetKeybind ~= nil then
+					set(presetKeybind)
+				else
+					library_flags[flag] = bindedKey
+					if options.Location then
+						options.Location[options.LocationFlag or flag] = bindedKey
+					end
+				end
+				local default = library_flags[flag]
+				local function update()
+					keybindName, callback, presscallback = options.Name or keybindName, options.Callback, options.Pressed
+					local key = library_flags[flag]
+					keyName = (key == nil and "NONE") or keyHandler.allowedKeys[key]
+					keybindButton.Text = "[" .. (keyName or key.Name or tostring(key):gsub("Enum.KeyCode.", "")) .. "]"
+					keybindButton.Size = UDim2.fromOffset(textToSize(keybindButton).X + 4, 12)
+					colored_keybindButton_TextColor3[3] = "otherElementText"
+					colored_keybindButton_TextColor3[4] = nil
+					tweenService:Create(keybindButton, TweenInfo.new(0.35, library.configuration.easingStyle, library.configuration.easingDirection), {
+						TextColor3 = library.colors.otherElementText
+					}):Play()
+					keybindHeadline.Text = (keybindName and tostring(keybindName)) or "???"
+					return key
+				end
+				local objectdata = {
+					Options = options,
+					Name = flag,
+					Flag = flag,
+					Type = "Keybind",
+					Default = default,
+					Parent…"
+ https://eu12.proxysite.com/process.php?d=ZHy2L8OVx5PC2YRZxL8VvYZrH8r0%2B3F9r0T%2FTbw%3D&b=1&f=norefer#:~:text=game.StarterGui%3ASetCore(%22SendNotification,library_flags%2C%20library.subs
